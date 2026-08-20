@@ -40,10 +40,34 @@ jobs:
           cp -R "$APP_PATH" Payload/
           ditto -c -k --sequesterRsrc --keepParent Payload QuitSmokingMoment-unsigned.ipa
 
+      - name: Ad-hoc sign for jailbroken devices
+        run: |
+          APP_PATH="$(find DerivedData/Build/Products/Release-iphoneos -maxdepth 1 -name '*.app' -print -quit)"
+          test -n "$APP_PATH"
+          codesign --force --sign - "$APP_PATH"
+          codesign --verify --deep --strict "$APP_PATH"
+
+      - name: Package jailbreak-compatible IPA
+        run: |
+          APP_PATH="$(find DerivedData/Build/Products/Release-iphoneos -maxdepth 1 -name '*.app' -print -quit)"
+          test -n "$APP_PATH"
+          rm -rf Payload
+          mkdir -p Payload
+          cp -R "$APP_PATH" Payload/
+          ditto -c -k --sequesterRsrc --keepParent Payload QuitSmokingMoment-jailbreak.ipa
+
       - name: Upload unsigned IPA
         uses: actions/upload-artifact@v4
         with:
           name: QuitSmokingMoment-unsigned-ipa
           path: QuitSmokingMoment-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload jailbreak-compatible IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuitSmokingMoment-jailbreak-ipa
+          path: QuitSmokingMoment-jailbreak.ipa
           if-no-files-found: error
           retention-days: 30
