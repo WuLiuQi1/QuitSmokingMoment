@@ -79,7 +79,7 @@ struct TrendsView: View {
         switch selectedPeriod {
         case .day:
             return (0..<24).compactMap { hour in
-                guard let date = calendar.date(bySettingHour: hour, minute: 0, second: 0, of: now) else { return nil }
+                guard calendar.date(bySettingHour: hour, minute: 0, second: 0, of: now) != nil else { return nil }
                 let matches = periodRecords.filter { calendar.component(.hour, from: $0.createdAt) == hour }
                 return TrendPoint(label: String(format: "%02d", hour), records: matches)
             }
@@ -102,7 +102,7 @@ struct TrendsView: View {
                 var components = calendar.dateComponents([.year], from: now)
                 components.month = month
                 components.day = 1
-                guard let date = calendar.date(from: components) else { return nil }
+                guard calendar.date(from: components) != nil else { return nil }
                 let matches = records.filter {
                     calendar.component(.year, from: $0.createdAt) == calendar.component(.year, from: now)
                     && calendar.component(.month, from: $0.createdAt) == month

@@ -22,7 +22,7 @@ private struct MainTabView: View {
                 NavigationStack { TrendsView() }.tag(AppTab.trends)
             }
         }
-        .toolbarVisibility(.hidden, for: .tabBar)
+        .toolbar(.hidden, for: .tabBar)
         .safeAreaInset(edge: .bottom, spacing: 0) {
             LiquidGlassDock(selection: $selection)
                 .padding(.horizontal, 20)
