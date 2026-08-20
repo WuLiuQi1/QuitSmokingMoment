@@ -40,17 +40,16 @@ struct TrendsView: View {
                         .frame(height: 240)
                         HStack(spacing: 16) {
                             Label("绿色：忍住没抽", systemImage: "circle.fill").foregroundStyle(.green)
-                            Label("红色：没忍住", systemImage: "circle.fill").foregroundStyle(.red)
+                            Label("红色：复吸", systemImage: "circle.fill").foregroundStyle(.red)
                         }
                         .font(.caption)
                     }
                 }
 
                 Section("\(selectedPeriod.rawValue)复吸记录") {
-                    LabeledContent("成功忍住", value: "\(periodSummary.successCount) 次")
-                    LabeledContent("没忍住", value: "\(periodSummary.relapseCount) 次")
-                    LabeledContent("抽了多少支", value: "\(periodSummary.smokedCigarettes) 根")
-                    LabeledContent("浪费了多少钱", value: periodSummary.spentMoney.formatted(.currency(code: "CNY")))
+                    LabeledContent("复吸", value: "\(periodSummary.relapseCount) 次")
+                    LabeledContent("抽了", value: "\(periodSummary.smokedCigarettes) 根")
+                    LabeledContent("浪费", value: periodSummary.spentMoney.formatted(.currency(code: "CNY")))
                     LabeledContent("摄入焦油", value: "\(periodSummary.tarMilligrams.formatted(.number.precision(.fractionLength(1)))) mg")
                     Text("焦油量按设置的每支 \(profile.tarMilligramsPerCigarette.formatted(.number.precision(.fractionLength(1)))) mg 估算。")
                         .font(.caption)

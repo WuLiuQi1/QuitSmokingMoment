@@ -11,11 +11,14 @@ struct CravingRescueView: View {
     @State private var isExpanded = false
     @State private var showsRelapseSheet = false
     @State private var cigaretteCount = 1
+    @State private var mood = RecordChoices.moods[0]
+    @State private var trigger = RecordChoices.triggers[0]
     private let duration = 180.0
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     private var remaining: Int { max(0, Int(duration - now.timeIntervalSince(startedAt))) }
 
     var body: some View {
+        ScrollView {
         VStack(spacing: 26) {
             Text("给自己 3 分钟").font(.title2.bold())
             ZStack {
@@ -29,13 +32,25 @@ struct CravingRescueView: View {
             VStack(alignment: .leading) { Text("当前强度：\(Int(intensity)) / 10"); Slider(value: $intensity, in: 1...10, step: 1) }
                 .padding()
                 .liquidGlassCard(cornerRadius: 18)
+            VStack(spacing: 12) {
+                Picker("想抽烟的诱因", selection: $trigger) {
+                    ForEach(RecordChoices.triggers, id: \.self) { Text($0) }
+                }
+                Picker("现在的心情", selection: $mood) {
+                    ForEach(RecordChoices.moods, id: \.self) { Text($0) }
+                }
+            }
+            .pickerStyle(.menu)
+            .padding()
+            .liquidGlassCard(cornerRadius: 18)
             HStack { RescueTip(title: "喝水", symbol: "drop.fill"); Spacer(); RescueTip(title: "走动", symbol: "figure.walk"); Spacer(); RescueTip(title: "转移注意", symbol: "sparkles") }
                 .padding()
                 .liquidGlassCard(cornerRadius: 18)
             Button("我坚持过去了") { saveSuccess() }.buttonStyle(.borderedProminent).controlSize(.large).frame(maxWidth: .infinity)
             Button("我没忍住", role: .destructive) { showsRelapseSheet = true }
                 .font(.subheadline)
-        }.padding().onReceive(timer) { now = $0 }.navigationTitle("烟瘾急救").navigationBarTitleDisplayMode(.inline)
+        }.padding()
+        }.onReceive(timer) { now = $0 }.navigationTitle("烟瘾急救").navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("关闭") { dismiss() } } }
         .sheet(isPresented: $showsRelapseSheet) {
             NavigationStack {
@@ -58,9 +73,9 @@ struct CravingRescueView: View {
             .presentationDetents([.medium])
         }
     }
-    private func saveSuccess() { modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: "烟瘾急救", mood: "坚持住了")); dismiss() }
+    private func saveSuccess() { modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: trigger, mood: mood)); dismiss() }
     private func saveRelapse() {
-        modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: "烟瘾急救", mood: "没忍住", didSmoke: true, cigaretteCount: cigaretteCount))
+        modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: trigger, mood: mood, didSmoke: true, cigaretteCount: cigaretteCount))
         dismiss()
     }
 }
