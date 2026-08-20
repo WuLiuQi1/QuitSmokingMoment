@@ -32,20 +32,13 @@ struct CravingRescueView: View {
             VStack(alignment: .leading) { Text("当前强度：\(Int(intensity)) / 10"); Slider(value: $intensity, in: 1...10, step: 1) }
                 .padding()
                 .liquidGlassCard(cornerRadius: 18)
-            VStack(spacing: 12) {
-                Picker("想抽烟的诱因", selection: $trigger) {
-                    ForEach(RecordChoices.triggers, id: \.self) { Text($0) }
-                }
-                Picker("现在的心情", selection: $mood) {
-                    ForEach(RecordChoices.moods, id: \.self) { Text($0) }
-                }
-            }
-            .pickerStyle(.menu)
-            .padding()
-            .liquidGlassCard(cornerRadius: 18)
             HStack { RescueTip(title: "喝水", symbol: "drop.fill"); Spacer(); RescueTip(title: "走动", symbol: "figure.walk"); Spacer(); RescueTip(title: "转移注意", symbol: "sparkles") }
                 .padding()
                 .liquidGlassCard(cornerRadius: 18)
+            HStack(spacing: 12) {
+                RescueChoice(title: "诱因", selection: $trigger, options: RecordChoices.triggers)
+                RescueChoice(title: "心情", selection: $mood, options: RecordChoices.moods)
+            }
             Button("我坚持过去了") { saveSuccess() }.buttonStyle(.borderedProminent).controlSize(.large).frame(maxWidth: .infinity)
             Button("我没忍住", role: .destructive) { showsRelapseSheet = true }
                 .font(.subheadline)
@@ -81,3 +74,31 @@ struct CravingRescueView: View {
 }
 
 private struct RescueTip: View { let title: String; let symbol: String; var body: some View { Label(title, systemImage: symbol).font(.subheadline) } }
+
+private struct RescueChoice: View {
+    let title: String
+    @Binding var selection: String
+    let options: [String]
+
+    var body: some View {
+        Menu {
+            ForEach(options, id: \.self) { option in
+                Button(option) { selection = option }
+            }
+        } label: {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title).font(.caption).foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    Text(selection).font(.subheadline.weight(.semibold)).lineLimit(1)
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.up.chevron.down").font(.caption.weight(.semibold))
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .liquidGlassCard(cornerRadius: 18)
+        }
+        .buttonStyle(.plain)
+    }
+}
