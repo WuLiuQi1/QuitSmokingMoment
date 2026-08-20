@@ -16,11 +16,10 @@ struct QuitMetrics {
         return "\(max(0, minutes)) 分钟"
     }
 
-    var expectedCigarettes: Double { max(0, now.timeIntervalSince(profile.quitDate)) / 86_400 * Double(profile.cigarettesPerDay) }
     var smokedCigarettes: Int { records.filter(\.didSmoke).reduce(0) { $0 + $1.cigaretteCount } }
-    var avoidedCigarettes: Double { max(0, expectedCigarettes - Double(smokedCigarettes)) }
-    var avoidedCigarettesText: String { avoidedCigarettes.formatted(.number.precision(.fractionLength(1))) }
-    var savedMoney: Double { guard profile.cigarettesPerPack > 0 else { return 0 }; return avoidedCigarettes / Double(profile.cigarettesPerPack) * profile.packPrice }
+    var avoidedCigarettes: Int { successfullyHandledCravings }
+    var avoidedCigarettesText: String { "\(avoidedCigarettes)" }
+    var savedMoney: Double { guard profile.cigarettesPerPack > 0 else { return 0 }; return Double(avoidedCigarettes) / Double(profile.cigarettesPerPack) * profile.packPrice }
     var todayCravings: Int { records.filter { Calendar.current.isDateInToday($0.createdAt) }.count }
     var successfullyHandledCravings: Int { records.filter { !$0.didSmoke }.count }
 

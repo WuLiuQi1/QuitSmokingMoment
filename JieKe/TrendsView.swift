@@ -52,11 +52,11 @@ struct TrendsView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                Section("戒烟累计估算") {
-                    LabeledContent("预计节省", value: quitMetrics.savedMoney.formatted(.currency(code: "CNY")))
-                    LabeledContent("预计少抽", value: "\(quitMetrics.avoidedCigarettesText) 根")
+                Section("戒烟累计") {
+                    LabeledContent("节省", value: quitMetrics.savedMoney.formatted(.currency(code: "CNY")))
+                    LabeledContent("少抽", value: "\(quitMetrics.avoidedCigarettesText) 根")
                     LabeledContent("已成功度过", value: "\(quitMetrics.successfullyHandledCravings) 次")
-                    Text("按戒烟时长和每日抽烟量估算；急救次数不会虚增为少抽烟支数。")
+                    Text("每成功忍住 1 次，记为少抽 1 支，并按每包价格换算节省金额。")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -109,4 +109,3 @@ private struct TriggerSummary: Identifiable {
     let count: Int
     var id: String { name }
 }
-

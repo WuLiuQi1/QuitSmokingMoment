@@ -19,11 +19,11 @@ struct HomeView: View {
                             Text(profile.quitDate, format: .dateTime.year().month().day().hour().minute()).font(.caption).foregroundStyle(.secondary)
                         }.frame(maxWidth: .infinity).padding(.vertical, 28).background(.thinMaterial, in: RoundedRectangle(cornerRadius: 24))
                         HStack(spacing: 10) {
-                            MetricCard(title: "预计少抽", value: "\(metrics.avoidedCigarettesText) 根", symbol: "lungs.fill")
-                            MetricCard(title: "预计节省", value: metrics.savedMoney.formatted(.currency(code: "CNY")), symbol: "yensign.circle.fill")
+                            MetricCard(title: "少抽", value: "\(metrics.avoidedCigarettesText) 根", symbol: "lungs.fill")
+                            MetricCard(title: "节省", value: metrics.savedMoney.formatted(.currency(code: "CNY")), symbol: "yensign.circle.fill")
                             MetricCard(title: "今日烟瘾", value: "\(metrics.todayCravings) 次", symbol: "waveform.path.ecg")
                         }
-                        Text("基于戒烟时长与每日习惯估算；已成功度过 \(metrics.successfullyHandledCravings) 次烟瘾。")
+                        Text("每成功忍住 1 次，计为少抽 1 支；已成功度过 \(metrics.successfullyHandledCravings) 次烟瘾。")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
