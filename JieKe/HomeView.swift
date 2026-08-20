@@ -46,7 +46,6 @@ struct HomeView: View {
                         .liquidGlassCard(tint: .green.opacity(0.12), cornerRadius: 18)
                     }
                     .padding()
-                    .padding(.bottom, 96)
                 }
                 }
             }

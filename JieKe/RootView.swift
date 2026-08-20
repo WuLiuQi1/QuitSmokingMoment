@@ -16,21 +16,17 @@ private struct MainTabView: View {
     var body: some View {
         ZStack {
             LiquidGlassBackdrop()
-            Group {
-                switch selection {
-                case .home:
-                    NavigationStack { HomeView() }
-                case .records:
-                    NavigationStack { RecordsView() }
-                case .trends:
-                    NavigationStack { TrendsView() }
-                }
+            TabView(selection: $selection) {
+                NavigationStack { HomeView() }
+                    .tabItem { Label(AppTab.home.title, systemImage: AppTab.home.symbol) }
+                    .tag(AppTab.home)
+                NavigationStack { RecordsView() }
+                    .tabItem { Label(AppTab.records.title, systemImage: AppTab.records.symbol) }
+                    .tag(AppTab.records)
+                NavigationStack { TrendsView() }
+                    .tabItem { Label(AppTab.trends.title, systemImage: AppTab.trends.symbol) }
+                    .tag(AppTab.trends)
             }
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            LiquidGlassDock(selection: $selection)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 6)
         }
     }
 }
@@ -54,32 +50,5 @@ private enum AppTab: String, CaseIterable, Identifiable {
         case .records: "square.and.pencil"
         case .trends: "chart.xyaxis.line"
         }
-    }
-}
-
-private struct LiquidGlassDock: View {
-    @Binding var selection: AppTab
-
-    var body: some View {
-        HStack(spacing: 8) {
-            ForEach(AppTab.allCases) { tab in
-                Button {
-                    selection = tab
-                } label: {
-                    Label(tab.title, systemImage: tab.symbol)
-                        .font(.subheadline.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .foregroundStyle(selection == tab ? Color.primary : Color.secondary)
-                        .background { if selection == tab { Capsule().fill(.white.opacity(0.26)) } }
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(selection == tab ? .isSelected : [])
-            }
-        }
-        .padding(6)
-        .frame(maxWidth: .infinity)
-        .liquidGlassCard(cornerRadius: 32)
-        .shadow(color: .black.opacity(0.16), radius: 16, y: 8)
     }
 }

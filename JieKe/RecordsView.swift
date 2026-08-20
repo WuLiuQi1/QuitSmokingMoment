@@ -14,7 +14,6 @@ struct RecordsView: View {
                 } else {
                     List {
                         ForEach(records) { RecordRow(record: $0).listRowBackground(Color.clear) }
-                        Color.clear.frame(height: 92).listRowBackground(Color.clear)
                     }
                     .scrollContentBackground(.hidden)
                 }

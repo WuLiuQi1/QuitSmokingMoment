@@ -71,7 +71,6 @@ struct TrendsView: View {
                     ForEach(triggerSummary) { item in LabeledContent(item.name, value: "\(item.count) 次") }
                 }
             }
-            Color.clear.frame(height: 92).listRowBackground(Color.clear)
         }
         .scrollContentBackground(.hidden)
         .navigationTitle("趋势")
