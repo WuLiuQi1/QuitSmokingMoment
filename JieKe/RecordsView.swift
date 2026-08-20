@@ -7,7 +7,12 @@ struct RecordsView: View {
     var body: some View {
         Group {
             if records.isEmpty { ContentUnavailableView("还没有记录", systemImage: "square.and.pencil", description: Text("记录烟瘾、心情和诱因，更了解自己的戒烟过程。")) }
-            else { List { ForEach(records) { RecordRow(record: $0) } } }
+            else {
+                List {
+                    ForEach(records) { RecordRow(record: $0).listRowBackground(Color.clear) }
+                }
+                .scrollContentBackground(.hidden)
+            }
         }.navigationTitle("记录")
             .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("添加记录", systemImage: "plus") { showsEditor = true } } }
             .sheet(isPresented: $showsEditor) { NavigationStack { RecordEditorView() } }
@@ -25,6 +30,9 @@ private struct RecordRow: View {
             }
             Spacer(); Text(record.createdAt, format: .dateTime.month().day().hour().minute()).font(.caption).foregroundStyle(.secondary)
         }
+        .padding(.vertical, 4)
+        .padding(.horizontal, 8)
+        .liquidGlassCard(cornerRadius: 18)
     }
 }
 
@@ -51,4 +59,3 @@ struct RecordEditorView: View {
     }
     private func save() { modelContext.insert(CravingRecord(intensity: intensity, trigger: trigger, mood: mood, note: note, didSmoke: didSmoke, cigaretteCount: didSmoke ? cigaretteCount : 0)); dismiss() }
 }
-

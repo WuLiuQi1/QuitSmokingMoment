@@ -12,7 +12,7 @@ struct HomeView: View {
             if let profile = profiles.first {
                 let metrics = QuitMetrics(profile: profile, records: records, now: timeline.date)
                 ScrollView {
-                    VStack(spacing: 20) {
+                        VStack(spacing: 20) {
                         VStack(spacing: 8) {
                             Text("已戒烟").foregroundStyle(.secondary)
                             Text(metrics.elapsedText).font(.system(.largeTitle, design: .rounded, weight: .bold)).contentTransition(.numericText())
@@ -31,7 +31,9 @@ struct HomeView: View {
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         Button { showsRescue = true } label: { Label("我现在想抽烟", systemImage: "shield.lefthalf.filled").font(.headline).frame(maxWidth: .infinity).padding(.vertical, 10) }
-                            .buttonStyle(.borderedProminent).controlSize(.large)
+                            .tint(.blue)
+                            .liquidGlassProminentButton()
+                            .controlSize(.large)
                         VStack(alignment: .leading, spacing: 10) {
                             Label("健康里程碑", systemImage: metrics.milestone.symbol).font(.headline)
                             Text(metrics.milestone.title).font(.title3.bold())
@@ -42,14 +44,6 @@ struct HomeView: View {
                         .liquidGlassCard(tint: .green.opacity(0.3), cornerRadius: 18)
                     }
                     .padding()
-                }
-                .background {
-                    LinearGradient(
-                        colors: [.mint.opacity(0.22), .blue.opacity(0.1), .clear],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .ignoresSafeArea()
                 }
             }
         }

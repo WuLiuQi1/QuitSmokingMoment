@@ -64,6 +64,7 @@ struct TrendsView: View {
                 }
             }
         }
+        .scrollContentBackground(.hidden)
         .navigationTitle("趋势")
     }
 
