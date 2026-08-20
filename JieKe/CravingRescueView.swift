@@ -1,48 +1,34 @@
+import Combine
+import SwiftData
 import SwiftUI
 
 struct CravingRescueView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @State private var intensity = 5.0
+    @State private var startedAt = Date()
+    @State private var now = Date()
+    @State private var isExpanded = false
+    private let duration = 180.0
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    private var remaining: Int { max(0, Int(duration - now.timeIntervalSince(startedAt))) }
 
     var body: some View {
-        VStack(spacing: 28) {
-            Image(systemName: "wind")
-                .font(.system(size: 72))
-                .foregroundStyle(.blue)
-                .symbolEffect(.pulse)
-            Text("先陪自己呼吸一分钟")
-                .font(.title2.bold())
-            Text("慢慢吸气，再缓缓呼气。烟瘾会像浪一样退去。")
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
-
-            VStack(alignment: .leading) {
-                Text("当前强度：\(Int(intensity)) / 10")
-                Slider(value: $intensity, in: 1...10, step: 1)
-            }
-
-            HStack {
-                Label("喝水", systemImage: "drop.fill")
-                Spacer()
-                Label("走动", systemImage: "figure.walk")
-                Spacer()
-                Label("转移注意", systemImage: "sparkles")
-            }
-            .font(.subheadline)
-
-            Button("我坚持过去了") { dismiss() }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .frame(maxWidth: .infinity)
-        }
-        .padding()
-        .navigationTitle("烟瘾急救")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("关闭") { dismiss() }
-            }
-        }
+        VStack(spacing: 26) {
+            Text("给自己 3 分钟").font(.title2.bold())
+            ZStack {
+                Circle().fill(.blue.opacity(0.12)).frame(width: 190, height: 190)
+                Circle().fill(.blue.opacity(0.2)).frame(width: isExpanded ? 150 : 105, height: isExpanded ? 150 : 105).animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: isExpanded)
+                VStack { Text("慢慢呼吸").font(.headline); Text("\(remaining / 60):\(String(format: "%02d", remaining % 60))").font(.system(.title, design: .rounded, weight: .bold)) }
+            }.onAppear { isExpanded = true }
+            Text("吸气 4 秒，停住 2 秒，呼气 6 秒。烟瘾会像浪一样退去。").multilineTextAlignment(.center).foregroundStyle(.secondary)
+            VStack(alignment: .leading) { Text("当前强度：\(Int(intensity)) / 10"); Slider(value: $intensity, in: 1...10, step: 1) }
+            HStack { RescueTip(title: "喝水", symbol: "drop.fill"); Spacer(); RescueTip(title: "走动", symbol: "figure.walk"); Spacer(); RescueTip(title: "转移注意", symbol: "sparkles") }
+            Button("我坚持过去了") { saveSuccess() }.buttonStyle(.borderedProminent).controlSize(.large).frame(maxWidth: .infinity)
+        }.padding().onReceive(timer) { now = $0 }.navigationTitle("烟瘾急救").navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("关闭") { dismiss() } } }
     }
+    private func saveSuccess() { modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: "烟瘾急救", mood: "坚持住了")); dismiss() }
 }
 
+private struct RescueTip: View { let title: String; let symbol: String; var body: some View { Label(title, systemImage: symbol).font(.subheadline) } }
