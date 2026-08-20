@@ -40,3 +40,34 @@ enum RecordChoices {
     static let moods = ["平静", "焦虑", "烦躁", "疲惫", "开心", "压力大"]
     static let triggers = ["饭后", "工作压力", "社交", "喝酒", "开车", "无聊", "看到别人抽烟", "其他"]
 }
+
+enum SummaryPeriod: String, CaseIterable, Identifiable {
+    case day = "当日"
+    case week = "本周"
+    case month = "本月"
+    case year = "本年"
+    var id: String { rawValue }
+
+    func contains(_ date: Date, now: Date = .now, calendar: Calendar = .current) -> Bool {
+        let component: Calendar.Component
+        switch self {
+        case .day: component = .day
+        case .week: component = .weekOfYear
+        case .month: component = .month
+        case .year: component = .year
+        }
+        guard let interval = calendar.dateInterval(of: component, for: now) else { return false }
+        return interval.contains(date)
+    }
+}
+
+struct PeriodSummary {
+    let records: [CravingRecord]
+    let profile: QuitProfile
+
+    var successCount: Int { records.filter { !$0.didSmoke }.count }
+    var relapseCount: Int { records.filter(\.didSmoke).count }
+    var smokedCigarettes: Int { records.filter(\.didSmoke).reduce(0) { $0 + $1.cigaretteCount } }
+    var spentMoney: Double { guard profile.cigarettesPerPack > 0 else { return 0 }; return Double(smokedCigarettes) / Double(profile.cigarettesPerPack) * profile.packPrice }
+    var tarMilligrams: Double { Double(smokedCigarettes) * profile.tarMilligramsPerCigarette }
+}

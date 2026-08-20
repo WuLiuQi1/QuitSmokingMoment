@@ -61,6 +61,7 @@ private struct ProfileSettingsForm: View {
         Stepper("每天 \(profile.cigarettesPerDay) 根", value: $profile.cigarettesPerDay, in: 1...100)
         Stepper("每包 \(profile.cigarettesPerPack) 根", value: $profile.cigarettesPerPack, in: 1...50)
         Stepper("烟龄 \(profile.smokingYears) 年", value: $profile.smokingYears, in: 0...80)
+        Stepper("每支焦油 \(profile.tarMilligramsPerCigarette.formatted(.number.precision(.fractionLength(1)))) mg", value: $profile.tarMilligramsPerCigarette, in: 0...30, step: 0.5)
         DatePicker("戒烟开始时间", selection: $profile.quitDate)
         TextField("高风险场景", text: $profile.highRiskScenes, axis: .vertical)
     }

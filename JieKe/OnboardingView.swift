@@ -7,6 +7,7 @@ struct OnboardingView: View {
     @State private var packPrice = 20.0
     @State private var cigarettesPerPack = 20
     @State private var smokingYears = 5
+    @State private var tarMilligrams = 10.0
     @State private var quitDate = Date()
     @State private var scenes = ""
 
@@ -24,6 +25,7 @@ struct OnboardingView: View {
                     Stepper("每天约 \(cigarettesPerDay) 根", value: $cigarettesPerDay, in: 1...100)
                     Stepper("每包 \(cigarettesPerPack) 根", value: $cigarettesPerPack, in: 1...50)
                     Stepper("烟龄 \(smokingYears) 年", value: $smokingYears, in: 0...80)
+                    Stepper("每支焦油 \(tarMilligrams.formatted(.number.precision(.fractionLength(1)))) mg", value: $tarMilligrams, in: 0...30, step: 0.5)
                     HStack { Text("一包价格"); Spacer(); TextField("价格", value: $packPrice, format: .currency(code: "CNY")).multilineTextAlignment(.trailing).keyboardType(.decimalPad).frame(width: 120) }
                 }
                 Section("开始戒烟") {
@@ -36,7 +38,6 @@ struct OnboardingView: View {
     }
 
     private func saveProfile() {
-        modelContext.insert(QuitProfile(cigarettesPerDay: cigarettesPerDay, packPrice: packPrice, cigarettesPerPack: cigarettesPerPack, smokingYears: smokingYears, quitDate: quitDate, highRiskScenes: scenes))
+        modelContext.insert(QuitProfile(cigarettesPerDay: cigarettesPerDay, packPrice: packPrice, cigarettesPerPack: cigarettesPerPack, smokingYears: smokingYears, tarMilligramsPerCigarette: tarMilligrams, quitDate: quitDate, highRiskScenes: scenes))
     }
 }
-

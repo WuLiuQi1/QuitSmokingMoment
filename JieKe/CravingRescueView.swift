@@ -9,6 +9,8 @@ struct CravingRescueView: View {
     @State private var startedAt = Date()
     @State private var now = Date()
     @State private var isExpanded = false
+    @State private var showsRelapseSheet = false
+    @State private var cigaretteCount = 1
     private let duration = 180.0
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     private var remaining: Int { max(0, Int(duration - now.timeIntervalSince(startedAt))) }
@@ -25,10 +27,36 @@ struct CravingRescueView: View {
             VStack(alignment: .leading) { Text("当前强度：\(Int(intensity)) / 10"); Slider(value: $intensity, in: 1...10, step: 1) }
             HStack { RescueTip(title: "喝水", symbol: "drop.fill"); Spacer(); RescueTip(title: "走动", symbol: "figure.walk"); Spacer(); RescueTip(title: "转移注意", symbol: "sparkles") }
             Button("我坚持过去了") { saveSuccess() }.buttonStyle(.borderedProminent).controlSize(.large).frame(maxWidth: .infinity)
+            Button("我没忍住", role: .destructive) { showsRelapseSheet = true }
+                .font(.subheadline)
         }.padding().onReceive(timer) { now = $0 }.navigationTitle("烟瘾急救").navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("关闭") { dismiss() } } }
+        .sheet(isPresented: $showsRelapseSheet) {
+            NavigationStack {
+                Form {
+                    Section("这次抽了多少？") {
+                        Stepper("\(cigaretteCount) 根", value: $cigaretteCount, in: 1...20)
+                    }
+                    Section {
+                        Text("如实记录不是失败。了解复吸发生的时刻，才能更好地准备下一次。")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .navigationTitle("记录复吸")
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) { Button("取消") { showsRelapseSheet = false } }
+                    ToolbarItem(placement: .confirmationAction) { Button("保存") { saveRelapse() } }
+                }
+            }
+            .presentationDetents([.medium])
+        }
     }
     private func saveSuccess() { modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: "烟瘾急救", mood: "坚持住了")); dismiss() }
+    private func saveRelapse() {
+        modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: "烟瘾急救", mood: "没忍住", didSmoke: true, cigaretteCount: cigaretteCount))
+        dismiss()
+    }
 }
 
 private struct RescueTip: View { let title: String; let symbol: String; var body: some View { Label(title, systemImage: symbol).font(.subheadline) } }

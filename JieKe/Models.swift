@@ -7,14 +7,16 @@ final class QuitProfile {
     var packPrice: Double
     var cigarettesPerPack: Int
     var smokingYears: Int
+    var tarMilligramsPerCigarette: Double
     var quitDate: Date
     var highRiskScenes: String
 
-    init(cigarettesPerDay: Int = 10, packPrice: Double = 20, cigarettesPerPack: Int = 20, smokingYears: Int = 5, quitDate: Date = .now, highRiskScenes: String = "") {
+    init(cigarettesPerDay: Int = 10, packPrice: Double = 20, cigarettesPerPack: Int = 20, smokingYears: Int = 5, tarMilligramsPerCigarette: Double = 10, quitDate: Date = .now, highRiskScenes: String = "") {
         self.cigarettesPerDay = cigarettesPerDay
         self.packPrice = packPrice
         self.cigarettesPerPack = cigarettesPerPack
         self.smokingYears = smokingYears
+        self.tarMilligramsPerCigarette = tarMilligramsPerCigarette
         self.quitDate = quitDate
         self.highRiskScenes = highRiskScenes
     }
@@ -40,4 +42,3 @@ final class CravingRecord {
         self.cigaretteCount = cigaretteCount
     }
 }
-
