@@ -19,7 +19,12 @@ struct TrendsView: View {
                     }
                         .chartYAxis { AxisMarks(position: .leading) }.frame(height: 220)
                 }
-                Section("累计") { LabeledContent("节省", value: metrics.savedMoney.formatted(.currency(code: "CNY"))); LabeledContent("少抽", value: "\(metrics.avoidedCigarettes) 根"); LabeledContent("已记录烟瘾", value: "\(records.count) 次") }
+                Section("累计估算") {
+                    LabeledContent("预计节省", value: metrics.savedMoney.formatted(.currency(code: "CNY")))
+                    LabeledContent("预计少抽", value: "\(metrics.avoidedCigarettesText) 根")
+                    LabeledContent("已成功度过", value: "\(metrics.successfullyHandledCravings) 次")
+                    Text("按戒烟时长和每日抽烟量估算；烟瘾急救次数不会虚增为少抽烟支数。").font(.caption).foregroundStyle(.secondary)
+                }
                 Section("常见诱因") {
                     if triggerSummary.isEmpty { Text("多记录几次后，这里会显示你的高风险诱因。").foregroundStyle(.secondary) }
                     ForEach(triggerSummary, id: \.name) { item in LabeledContent(item.name, value: "\(item.count) 次") }

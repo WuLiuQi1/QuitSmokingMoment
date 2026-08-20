@@ -16,11 +16,13 @@ struct QuitMetrics {
         return "\(max(0, minutes)) 分钟"
     }
 
-    var expectedCigarettes: Int { Int(max(0, now.timeIntervalSince(profile.quitDate)) / 86_400 * Double(profile.cigarettesPerDay)) }
+    var expectedCigarettes: Double { max(0, now.timeIntervalSince(profile.quitDate)) / 86_400 * Double(profile.cigarettesPerDay) }
     var smokedCigarettes: Int { records.filter(\.didSmoke).reduce(0) { $0 + $1.cigaretteCount } }
-    var avoidedCigarettes: Int { max(0, expectedCigarettes - smokedCigarettes) }
-    var savedMoney: Double { guard profile.cigarettesPerPack > 0 else { return 0 }; return Double(avoidedCigarettes) / Double(profile.cigarettesPerPack) * profile.packPrice }
+    var avoidedCigarettes: Double { max(0, expectedCigarettes - Double(smokedCigarettes)) }
+    var avoidedCigarettesText: String { avoidedCigarettes.formatted(.number.precision(.fractionLength(1))) }
+    var savedMoney: Double { guard profile.cigarettesPerPack > 0 else { return 0 }; return avoidedCigarettes / Double(profile.cigarettesPerPack) * profile.packPrice }
     var todayCravings: Int { records.filter { Calendar.current.isDateInToday($0.createdAt) }.count }
+    var successfullyHandledCravings: Int { records.filter { !$0.didSmoke }.count }
 
     var milestone: (title: String, detail: String, symbol: String) {
         let hours = max(0, now.timeIntervalSince(profile.quitDate) / 3_600)
@@ -38,4 +40,3 @@ enum RecordChoices {
     static let moods = ["平静", "焦虑", "烦躁", "疲惫", "开心", "压力大"]
     static let triggers = ["饭后", "工作压力", "社交", "喝酒", "开车", "无聊", "看到别人抽烟", "其他"]
 }
-

@@ -19,10 +19,14 @@ struct HomeView: View {
                             Text(profile.quitDate, format: .dateTime.year().month().day().hour().minute()).font(.caption).foregroundStyle(.secondary)
                         }.frame(maxWidth: .infinity).padding(.vertical, 28).background(.thinMaterial, in: RoundedRectangle(cornerRadius: 24))
                         HStack(spacing: 10) {
-                            MetricCard(title: "少抽", value: "\(metrics.avoidedCigarettes) 根", symbol: "lungs.fill")
-                            MetricCard(title: "节省", value: metrics.savedMoney.formatted(.currency(code: "CNY")), symbol: "yensign.circle.fill")
+                            MetricCard(title: "预计少抽", value: "\(metrics.avoidedCigarettesText) 根", symbol: "lungs.fill")
+                            MetricCard(title: "预计节省", value: metrics.savedMoney.formatted(.currency(code: "CNY")), symbol: "yensign.circle.fill")
                             MetricCard(title: "今日烟瘾", value: "\(metrics.todayCravings) 次", symbol: "waveform.path.ecg")
                         }
+                        Text("基于戒烟时长与每日习惯估算；已成功度过 \(metrics.successfullyHandledCravings) 次烟瘾。")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         Button { showsRescue = true } label: { Label("我现在想抽烟", systemImage: "shield.lefthalf.filled").font(.headline).frame(maxWidth: .infinity).padding(.vertical, 10) }
                             .buttonStyle(.borderedProminent).controlSize(.large)
                         VStack(alignment: .leading, spacing: 10) {
@@ -48,4 +52,3 @@ private struct MetricCard: View {
             .frame(maxWidth: .infinity).padding(.vertical).background(.quaternary, in: RoundedRectangle(cornerRadius: 16))
     }
 }
-
