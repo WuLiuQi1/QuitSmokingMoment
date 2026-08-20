@@ -17,7 +17,10 @@ struct HomeView: View {
                             Text("已戒烟").foregroundStyle(.secondary)
                             Text(metrics.elapsedText).font(.system(.largeTitle, design: .rounded, weight: .bold)).contentTransition(.numericText())
                             Text(profile.quitDate, format: .dateTime.year().month().day().hour().minute()).font(.caption).foregroundStyle(.secondary)
-                        }.frame(maxWidth: .infinity).padding(.vertical, 28).background(.thinMaterial, in: RoundedRectangle(cornerRadius: 24))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 28)
+                        .liquidGlassCard(tint: .mint)
                         HStack(spacing: 10) {
                             MetricCard(title: "少抽", value: "\(metrics.avoidedCigarettesText) 根", symbol: "lungs.fill")
                             MetricCard(title: "节省", value: metrics.savedMoney.formatted(.currency(code: "CNY")), symbol: "yensign.circle.fill")
@@ -33,8 +36,20 @@ struct HomeView: View {
                             Label("健康里程碑", systemImage: metrics.milestone.symbol).font(.headline)
                             Text(metrics.milestone.title).font(.title3.bold())
                             Text(metrics.milestone.detail).foregroundStyle(.secondary)
-                        }.frame(maxWidth: .infinity, alignment: .leading).padding().background(.quaternary, in: RoundedRectangle(cornerRadius: 18))
-                    }.padding()
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                        .liquidGlassCard(tint: .green.opacity(0.3), cornerRadius: 18)
+                    }
+                    .padding()
+                }
+                .background {
+                    LinearGradient(
+                        colors: [.mint.opacity(0.22), .blue.opacity(0.1), .clear],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .ignoresSafeArea()
                 }
             }
         }
@@ -49,6 +64,8 @@ private struct MetricCard: View {
     let title: String; let value: String; let symbol: String
     var body: some View {
         VStack(spacing: 8) { Image(systemName: symbol).foregroundStyle(.tint); Text(value).font(.headline).lineLimit(1).minimumScaleFactor(0.75); Text(title).font(.caption).foregroundStyle(.secondary) }
-            .frame(maxWidth: .infinity).padding(.vertical).background(.quaternary, in: RoundedRectangle(cornerRadius: 16))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical)
+            .liquidGlassCard(cornerRadius: 16)
     }
 }

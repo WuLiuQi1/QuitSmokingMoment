@@ -22,10 +22,16 @@ struct CravingRescueView: View {
                 Circle().fill(.blue.opacity(0.12)).frame(width: 190, height: 190)
                 Circle().fill(.blue.opacity(0.2)).frame(width: isExpanded ? 150 : 105, height: isExpanded ? 150 : 105).animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: isExpanded)
                 VStack { Text("慢慢呼吸").font(.headline); Text("\(remaining / 60):\(String(format: "%02d", remaining % 60))").font(.system(.title, design: .rounded, weight: .bold)) }
-            }.onAppear { isExpanded = true }
+            }
+            .onAppear { isExpanded = true }
+            .liquidGlassCard(tint: .blue.opacity(0.35), cornerRadius: 95)
             Text("吸气 4 秒，停住 2 秒，呼气 6 秒。烟瘾会像浪一样退去。").multilineTextAlignment(.center).foregroundStyle(.secondary)
             VStack(alignment: .leading) { Text("当前强度：\(Int(intensity)) / 10"); Slider(value: $intensity, in: 1...10, step: 1) }
+                .padding()
+                .liquidGlassCard(cornerRadius: 18)
             HStack { RescueTip(title: "喝水", symbol: "drop.fill"); Spacer(); RescueTip(title: "走动", symbol: "figure.walk"); Spacer(); RescueTip(title: "转移注意", symbol: "sparkles") }
+                .padding()
+                .liquidGlassCard(cornerRadius: 18)
             Button("我坚持过去了") { saveSuccess() }.buttonStyle(.borderedProminent).controlSize(.large).frame(maxWidth: .infinity)
             Button("我没忍住", role: .destructive) { showsRelapseSheet = true }
                 .font(.subheadline)
