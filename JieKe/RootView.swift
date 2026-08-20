@@ -16,13 +16,17 @@ private struct MainTabView: View {
     var body: some View {
         ZStack {
             LiquidGlassBackdrop()
-            TabView(selection: $selection) {
-                NavigationStack { HomeView() }.tag(AppTab.home)
-                NavigationStack { RecordsView() }.tag(AppTab.records)
-                NavigationStack { TrendsView() }.tag(AppTab.trends)
+            Group {
+                switch selection {
+                case .home:
+                    NavigationStack { HomeView() }
+                case .records:
+                    NavigationStack { RecordsView() }
+                case .trends:
+                    NavigationStack { TrendsView() }
+                }
             }
         }
-        .toolbar(.hidden, for: .tabBar)
         .safeAreaInset(edge: .bottom, spacing: 0) {
             LiquidGlassDock(selection: $selection)
                 .padding(.horizontal, 20)
@@ -74,7 +78,8 @@ private struct LiquidGlassDock: View {
             }
         }
         .padding(6)
-        .liquidGlassCard(tint: .white.opacity(0.32), cornerRadius: 32)
+        .frame(maxWidth: .infinity)
+        .liquidGlassCard(cornerRadius: 32)
         .shadow(color: .black.opacity(0.16), radius: 16, y: 8)
     }
 }

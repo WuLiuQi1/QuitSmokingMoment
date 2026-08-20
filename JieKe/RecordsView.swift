@@ -5,13 +5,19 @@ struct RecordsView: View {
     @Query(sort: \CravingRecord.createdAt, order: .reverse) private var records: [CravingRecord]
     @State private var showsEditor = false
     var body: some View {
-        Group {
-            if records.isEmpty { ContentUnavailableView("还没有记录", systemImage: "square.and.pencil", description: Text("记录烟瘾、心情和诱因，更了解自己的戒烟过程。")) }
-            else {
-                List {
-                    ForEach(records) { RecordRow(record: $0).listRowBackground(Color.clear) }
+        ZStack {
+            LiquidGlassBackdrop()
+            Group {
+                if records.isEmpty {
+                    ContentUnavailableView("还没有记录", systemImage: "square.and.pencil", description: Text("记录烟瘾、心情和诱因，更了解自己的戒烟过程。"))
+                        .foregroundStyle(.white)
+                } else {
+                    List {
+                        ForEach(records) { RecordRow(record: $0).listRowBackground(Color.clear) }
+                        Color.clear.frame(height: 92).listRowBackground(Color.clear)
+                    }
+                    .scrollContentBackground(.hidden)
                 }
-                .scrollContentBackground(.hidden)
             }
         }.navigationTitle("记录")
             .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("添加记录", systemImage: "plus") { showsEditor = true } } }

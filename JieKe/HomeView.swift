@@ -11,7 +11,9 @@ struct HomeView: View {
         TimelineView(.periodic(from: .now, by: 60)) { timeline in
             if let profile = profiles.first {
                 let metrics = QuitMetrics(profile: profile, records: records, now: timeline.date)
-                ScrollView {
+                ZStack {
+                    LiquidGlassBackdrop()
+                    ScrollView {
                         VStack(spacing: 20) {
                         VStack(spacing: 8) {
                             Text("已戒烟").foregroundStyle(.secondary)
@@ -20,7 +22,7 @@ struct HomeView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 28)
-                        .liquidGlassCard(tint: .mint)
+                        .liquidGlassCard(tint: .mint.opacity(0.18))
                         HStack(spacing: 10) {
                             MetricCard(title: "少抽", value: "\(metrics.avoidedCigarettesText) 根", symbol: "lungs.fill")
                             MetricCard(title: "节省", value: metrics.savedMoney.formatted(.currency(code: "CNY")), symbol: "yensign.circle.fill")
@@ -41,9 +43,11 @@ struct HomeView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
-                        .liquidGlassCard(tint: .green.opacity(0.3), cornerRadius: 18)
+                        .liquidGlassCard(tint: .green.opacity(0.12), cornerRadius: 18)
                     }
                     .padding()
+                    .padding(.bottom, 96)
+                }
                 }
             }
         }

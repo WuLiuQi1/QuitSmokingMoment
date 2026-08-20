@@ -8,7 +8,9 @@ struct TrendsView: View {
     @State private var selectedPeriod: SummaryPeriod = .day
 
     var body: some View {
-        List {
+        ZStack {
+            LiquidGlassBackdrop()
+            List {
             if let profile = profiles.first {
                 let quitMetrics = QuitMetrics(profile: profile, records: records, now: .now)
                 let periodSummary = PeriodSummary(records: periodRecords, profile: profile)
@@ -21,21 +23,27 @@ struct TrendsView: View {
                 }
 
                 Section("\(selectedPeriod.rawValue)记录") {
-                    Chart(periodTrendPoints) { item in
-                        BarMark(x: .value("时间", item.label), y: .value("次数", item.successCount))
-                            .foregroundStyle(Color.green)
-                            .position(by: .value("结果", "忍住了"))
-                        BarMark(x: .value("时间", item.label), y: .value("次数", item.relapseCount))
-                            .foregroundStyle(Color.red)
-                            .position(by: .value("结果", "没忍住"))
+                    if periodRecords.isEmpty {
+                        ContentUnavailableView("暂无记录", systemImage: "chart.bar", description: Text("记录一次烟瘾后，这里会显示趋势。"))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 40)
+                    } else {
+                        Chart(periodTrendPoints) { item in
+                            BarMark(x: .value("时间", item.label), y: .value("次数", item.successCount))
+                                .foregroundStyle(Color.green)
+                                .position(by: .value("结果", "忍住了"))
+                            BarMark(x: .value("时间", item.label), y: .value("次数", item.relapseCount))
+                                .foregroundStyle(Color.red)
+                                .position(by: .value("结果", "没忍住"))
+                        }
+                        .chartYAxis { AxisMarks(position: .leading) }
+                        .frame(height: 240)
+                        HStack(spacing: 16) {
+                            Label("绿色：忍住没抽", systemImage: "circle.fill").foregroundStyle(.green)
+                            Label("红色：没忍住", systemImage: "circle.fill").foregroundStyle(.red)
+                        }
+                        .font(.caption)
                     }
-                    .chartYAxis { AxisMarks(position: .leading) }
-                    .frame(height: 240)
-                    HStack(spacing: 16) {
-                        Label("绿色：忍住没抽", systemImage: "circle.fill").foregroundStyle(.green)
-                        Label("红色：没忍住", systemImage: "circle.fill").foregroundStyle(.red)
-                    }
-                    .font(.caption)
                 }
 
                 Section("\(selectedPeriod.rawValue)复吸记录") {
@@ -63,9 +71,11 @@ struct TrendsView: View {
                     ForEach(triggerSummary) { item in LabeledContent(item.name, value: "\(item.count) 次") }
                 }
             }
+            Color.clear.frame(height: 92).listRowBackground(Color.clear)
         }
         .scrollContentBackground(.hidden)
         .navigationTitle("趋势")
+        }
     }
 
     private var periodRecords: [CravingRecord] {
