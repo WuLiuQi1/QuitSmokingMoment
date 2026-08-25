@@ -39,10 +39,10 @@ struct SettingsView: View {
         AnyView(List {
             if let profile = profiles.first { Section("戒烟资料") { ProfileSettingsForm(profile: profile) } }
             Section("提醒") {
-                Toggle("每日戒烟提醒", isOn: $notificationsEnabled)
-                if notificationsEnabled { DatePicker("提醒时间", selection: $reminderTime, displayedComponents: .hourAndMinute) }
+                Toggle("每日戒烟提醒", isOn: dailyReminderBinding)
+                if notificationsEnabled { DatePicker("提醒时间", selection: reminderTimeBinding, displayedComponents: .hourAndMinute) }
                 if let insight = RiskInsight.from(records: records) {
-                    Toggle("高风险时段提醒", isOn: $highRiskReminderEnabled)
+                    Toggle("高风险时段提醒", isOn: highRiskReminderBinding)
                     Text("根据记录推测，你在 \(insight.timeText) 前后较易想抽烟；会提前发送提醒。")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -54,21 +54,21 @@ struct SettingsView: View {
                 Text("提醒会在这台设备上本地发送。").font(.caption).foregroundStyle(.secondary)
             }
             Section("阶段提醒") {
-                Toggle("成就解锁提醒", isOn: $achievementNotificationsEnabled)
-                Toggle("健康里程碑提醒", isOn: $healthMilestoneNotificationsEnabled)
-                Toggle("目标完成提醒", isOn: $goalNotificationsEnabled)
+                Toggle("成就解锁提醒", isOn: achievementReminderBinding)
+                Toggle("健康里程碑提醒", isOn: healthMilestoneReminderBinding)
+                Toggle("目标完成提醒", isOn: goalReminderBinding)
                 Text("成就和健康阶段达到时，会在本机显示提醒。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
             Section("每日复盘提醒") {
-                Toggle("提醒我写复盘", isOn: $reflectionReminderEnabled)
-                if reflectionReminderEnabled { DatePicker("提醒时间", selection: $reflectionReminderTime, displayedComponents: .hourAndMinute) }
+                Toggle("提醒我写复盘", isOn: reflectionReminderBinding)
+                if reflectionReminderEnabled { DatePicker("提醒时间", selection: reflectionTimeBinding, displayedComponents: .hourAndMinute) }
             }
             Section("健康与数据") {
                 NavigationLink { HealthDashboardView() } label: { Label("HealthKit", systemImage: "heart.text.square") }
                 Label("小组件", systemImage: "rectangle.3.group")
-                Toggle("显示戒烟实时活动", isOn: $liveActivityEnabled)
+                Toggle("显示戒烟实时活动", isOn: liveActivityBinding)
                 Button { exportRecords() } label: { Label("导出记录 CSV", systemImage: "square.and.arrow.up") }
                 Button { exportBackup() } label: { Label("导出完整备份", systemImage: "externaldrive.badge.checkmark") }
                 Button { showsBackupImporter = true } label: { Label("从备份恢复", systemImage: "externaldrive.badge.plus") }
@@ -95,76 +95,6 @@ struct SettingsView: View {
         .onAppear {
             reminderTime = Calendar.current.date(from: DateComponents(hour: reminderHour, minute: reminderMinute)) ?? .now
             reflectionReminderTime = Calendar.current.date(from: DateComponents(hour: reflectionReminderHour, minute: reflectionReminderMinute)) ?? .now
-        }
-        .onChange(of: notificationsEnabled) { _, enabled in
-            Task {
-                if enabled {
-                    let allowed = await NotificationManager.requestAuthorization()
-                    if allowed { await saveReminder() }
-                    else { notificationsEnabled = false; notificationError = true }
-                } else {
-                    NotificationManager.cancelDailyReminder()
-                }
-            }
-        }
-        .onChange(of: reminderTime) { _, _ in
-            guard notificationsEnabled else { return }
-            Task { await saveReminder() }
-        }
-        .onChange(of: highRiskReminderEnabled) { _, enabled in
-            Task {
-                guard enabled else { NotificationManager.cancelRiskReminder(); return }
-                let allowed = await NotificationManager.requestAuthorization()
-                guard allowed, let insight = RiskInsight.from(records: records) else {
-                    highRiskReminderEnabled = false
-                    notificationError = true
-                    return
-                }
-                await NotificationManager.scheduleRiskReminder(for: insight)
-            }
-        }
-        .onChange(of: achievementNotificationsEnabled) { _, enabled in
-            Task {
-                guard enabled else { return }
-                let allowed = await NotificationManager.requestAuthorization()
-                if !allowed { achievementNotificationsEnabled = false; notificationError = true }
-            }
-        }
-        .onChange(of: healthMilestoneNotificationsEnabled) { _, enabled in
-            Task {
-                guard enabled else { NotificationManager.cancelHealthMilestoneReminder(); return }
-                let allowed = await NotificationManager.requestAuthorization()
-                guard allowed, let profile = profiles.first else {
-                    healthMilestoneNotificationsEnabled = false
-                    notificationError = true
-                    return
-                }
-                await NotificationManager.scheduleNextHealthMilestone(after: profile.quitDate)
-            }
-        }
-        .onChange(of: goalNotificationsEnabled) { _, enabled in
-            Task {
-                guard enabled else { return }
-                if !(await NotificationManager.requestAuthorization()) { goalNotificationsEnabled = false; notificationError = true }
-            }
-        }
-        .onChange(of: reflectionReminderEnabled) { _, enabled in
-            Task {
-                guard enabled else { NotificationManager.cancelReflectionReminder(); return }
-                guard await NotificationManager.requestAuthorization() else { reflectionReminderEnabled = false; notificationError = true; return }
-                await saveReflectionReminder()
-            }
-        }
-        .onChange(of: reflectionReminderTime) { _, _ in
-            guard reflectionReminderEnabled else { return }
-            Task { await saveReflectionReminder() }
-        }
-        .onChange(of: liveActivityEnabled) { _, enabled in
-            guard let profile = profiles.first else { return }
-            Task {
-                if enabled { LiveActivityManager.start(profile: profile, records: records) }
-                else { await LiveActivityManager.endAll() }
-            }
         }
         .alert("未获得通知权限", isPresented: $notificationError) {
             Button("好", role: .cancel) { }
@@ -197,6 +127,73 @@ struct SettingsView: View {
             Text("请选择由戒刻导出的完整 JSON 备份文件。")
         }
         .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { dismiss() } } }
+    }
+
+    private var dailyReminderBinding: Binding<Bool> { Binding(get: { notificationsEnabled }, set: { setDailyReminder($0) }) }
+    private var reminderTimeBinding: Binding<Date> { Binding(get: { reminderTime }, set: { date in reminderTime = date; if notificationsEnabled { Task { await saveReminder() } } }) }
+    private var highRiskReminderBinding: Binding<Bool> { Binding(get: { highRiskReminderEnabled }, set: { setHighRiskReminder($0) }) }
+    private var achievementReminderBinding: Binding<Bool> { Binding(get: { achievementNotificationsEnabled }, set: { setSimpleNotification($0, key: .achievement) }) }
+    private var healthMilestoneReminderBinding: Binding<Bool> { Binding(get: { healthMilestoneNotificationsEnabled }, set: { setHealthMilestoneReminder($0) }) }
+    private var goalReminderBinding: Binding<Bool> { Binding(get: { goalNotificationsEnabled }, set: { setSimpleNotification($0, key: .goal) }) }
+    private var reflectionReminderBinding: Binding<Bool> { Binding(get: { reflectionReminderEnabled }, set: { setReflectionReminder($0) }) }
+    private var reflectionTimeBinding: Binding<Date> { Binding(get: { reflectionReminderTime }, set: { date in reflectionReminderTime = date; if reflectionReminderEnabled { Task { await saveReflectionReminder() } } }) }
+    private var liveActivityBinding: Binding<Bool> { Binding(get: { liveActivityEnabled }, set: { setLiveActivity($0) }) }
+
+    private enum SimpleNotificationKey { case achievement, goal }
+
+    private func setDailyReminder(_ enabled: Bool) {
+        notificationsEnabled = enabled
+        Task {
+            if enabled {
+                if await NotificationManager.requestAuthorization() { await saveReminder() }
+                else { notificationsEnabled = false; notificationError = true }
+            } else { NotificationManager.cancelDailyReminder() }
+        }
+    }
+
+    private func setHighRiskReminder(_ enabled: Bool) {
+        highRiskReminderEnabled = enabled
+        Task {
+            guard enabled else { NotificationManager.cancelRiskReminder(); return }
+            guard await NotificationManager.requestAuthorization(), let insight = RiskInsight.from(records: records) else { highRiskReminderEnabled = false; notificationError = true; return }
+            await NotificationManager.scheduleRiskReminder(for: insight)
+        }
+    }
+
+    private func setSimpleNotification(_ enabled: Bool, key: SimpleNotificationKey) {
+        if key == .achievement { achievementNotificationsEnabled = enabled } else { goalNotificationsEnabled = enabled }
+        Task {
+            guard enabled else { return }
+            guard await NotificationManager.requestAuthorization() else {
+                if key == .achievement { achievementNotificationsEnabled = false } else { goalNotificationsEnabled = false }
+                notificationError = true
+                return
+            }
+        }
+    }
+
+    private func setHealthMilestoneReminder(_ enabled: Bool) {
+        healthMilestoneNotificationsEnabled = enabled
+        Task {
+            guard enabled else { NotificationManager.cancelHealthMilestoneReminder(); return }
+            guard await NotificationManager.requestAuthorization(), let profile = profiles.first else { healthMilestoneNotificationsEnabled = false; notificationError = true; return }
+            await NotificationManager.scheduleNextHealthMilestone(after: profile.quitDate)
+        }
+    }
+
+    private func setReflectionReminder(_ enabled: Bool) {
+        reflectionReminderEnabled = enabled
+        Task {
+            guard enabled else { NotificationManager.cancelReflectionReminder(); return }
+            guard await NotificationManager.requestAuthorization() else { reflectionReminderEnabled = false; notificationError = true; return }
+            await saveReflectionReminder()
+        }
+    }
+
+    private func setLiveActivity(_ enabled: Bool) {
+        liveActivityEnabled = enabled
+        guard let profile = profiles.first else { return }
+        Task { if enabled { LiveActivityManager.start(profile: profile, records: records) } else { await LiveActivityManager.endAll() } }
     }
 
     private func saveReminder() async {
