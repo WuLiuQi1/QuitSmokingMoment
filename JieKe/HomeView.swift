@@ -114,7 +114,13 @@ struct HomeView: View {
             NavigationStack { HealthMilestonesView(metrics: QuitMetrics(profile: profiles.first!, records: records, now: .now)) }
         }
         .sheet(isPresented: $showsDailyPlan) {
-            NavigationStack { DailyPlanView(successCount: records.filter { !$0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count) }
+            NavigationStack {
+                DailyPlanView(
+                    successCount: records.filter { !$0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count,
+                    weeklySuccessCount: records.filter { !$0.didSmoke && SummaryPeriod.week.contains($0.createdAt) }.count,
+                    savedMoney: QuitMetrics(profile: profiles.first!, records: records, now: .now).savedMoney
+                )
+            }
         }
         .sheet(isPresented: $showsDailyReflection) {
             NavigationStack { DailyReflectionView(reflection: reflections.first(where: { Calendar.current.isDateInToday($0.createdAt) }), successCount: records.filter { !$0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count, relapseCount: records.filter { $0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count) }

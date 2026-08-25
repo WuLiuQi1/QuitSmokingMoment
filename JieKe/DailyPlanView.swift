@@ -72,7 +72,11 @@ struct DailyPlanCard: View {
 
 struct DailyPlanView: View {
     let successCount: Int
+    let weeklySuccessCount: Int
+    let savedMoney: Double
     @AppStorage("dailyResistGoal") private var goal = 3
+    @AppStorage("weeklyResistGoal") private var weeklyGoal = 12
+    @AppStorage("savingsGoal") private var savingsGoal = 100
     @AppStorage("dailyPlanDate") private var storedDate = ""
     @AppStorage("dailyPlanActions") private var storedActions = ""
 
@@ -86,6 +90,21 @@ struct DailyPlanView: View {
                 ProgressView(value: Double(min(successCount, goal)), total: Double(max(goal, 1)))
                     .tint(successCount >= goal ? .green : .indigo)
                 Text(successCount >= goal ? "今天的目标已经完成，继续保持。" : "今天已成功忍住 \(successCount) 次，还差 \(goal - successCount) 次。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            Section("个性化目标") {
+                Stepper("本周成功忍住 \(weeklyGoal) 次", value: $weeklyGoal, in: 1...100)
+                ProgressView(value: Double(min(weeklySuccessCount, weeklyGoal)), total: Double(max(weeklyGoal, 1)))
+                    .tint(weeklySuccessCount >= weeklyGoal ? .green : .blue)
+                Text("本周已成功忍住 \(weeklySuccessCount) 次。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+
+                Stepper("累计节省 ¥\(savingsGoal)", value: $savingsGoal, in: 10...10_000, step: 10)
+                ProgressView(value: min(savedMoney, Double(savingsGoal)), total: Double(savingsGoal))
+                    .tint(savedMoney >= Double(savingsGoal) ? .green : .mint)
+                Text("累计已节省 \(savedMoney.formatted(.currency(code: "CNY")))。")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
