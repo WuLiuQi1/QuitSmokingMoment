@@ -14,6 +14,7 @@ targets:
     platform: iOS
     sources:
       - path: JieKe
+      - path: Shared
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.quitsmokingmoment.app
