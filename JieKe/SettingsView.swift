@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import UIKit
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
@@ -11,6 +12,9 @@ struct SettingsView: View {
     @AppStorage("highRiskReminderEnabled") private var highRiskReminderEnabled = false
     @State private var reminderTime = Calendar.current.date(from: DateComponents(hour: 20, minute: 0)) ?? .now
     @State private var notificationError = false
+    @State private var exportURL: URL?
+    @State private var showsExportSheet = false
+    @State private var exportError = false
     var body: some View {
         List {
             if let profile = profiles.first { Section("戒烟资料") { ProfileSettingsForm(profile: profile) } }
@@ -29,7 +33,11 @@ struct SettingsView: View {
                 }
                 Text("提醒会在这台设备上本地发送。").font(.caption).foregroundStyle(.secondary)
             }
-            Section("健康与数据") { Label("HealthKit（即将推出）", systemImage: "heart.text.square"); Label("小组件（即将推出）", systemImage: "rectangle.3.group"); Label("数据导出（即将推出）", systemImage: "square.and.arrow.up") }
+            Section("健康与数据") {
+                Label("HealthKit（即将推出）", systemImage: "heart.text.square")
+                Label("小组件（即将推出）", systemImage: "rectangle.3.group")
+                Button { exportRecords() } label: { Label("导出记录 CSV", systemImage: "square.and.arrow.up") }
+            }
             Section("隐私") { Text("你的戒烟资料与记录目前仅保存在这台设备上。").font(.footnote) }
         }
         .navigationTitle("设置")
@@ -68,6 +76,14 @@ struct SettingsView: View {
         } message: {
             Text("请在系统设置中允许“戒刻”发送通知后再开启提醒。")
         }
+        .alert("导出失败", isPresented: $exportError) {
+            Button("好", role: .cancel) { }
+        } message: {
+            Text("暂时无法生成导出文件，请稍后再试。")
+        }
+        .sheet(isPresented: $showsExportSheet) {
+            if let exportURL { ActivityShareSheet(items: [exportURL]) }
+        }
         .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { dismiss() } } }
     }
 
@@ -77,6 +93,25 @@ struct SettingsView: View {
         reminderMinute = components.minute ?? 0
         await NotificationManager.scheduleDailyReminder(at: reminderTime)
     }
+
+    private func exportRecords() {
+        do {
+            exportURL = try CSVExporter.export(records: records)
+            showsExportSheet = true
+        } catch {
+            exportError = true
+        }
+    }
+}
+
+private struct ActivityShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) { }
 }
 
 private struct ProfileSettingsForm: View {
