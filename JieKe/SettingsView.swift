@@ -10,6 +10,7 @@ struct SettingsView: View {
     @AppStorage("reminderHour") private var reminderHour = 20
     @AppStorage("reminderMinute") private var reminderMinute = 0
     @AppStorage("highRiskReminderEnabled") private var highRiskReminderEnabled = false
+    @AppStorage("privacyLockEnabled") private var privacyLockEnabled = false
     @State private var reminderTime = Calendar.current.date(from: DateComponents(hour: 20, minute: 0)) ?? .now
     @State private var notificationError = false
     @State private var exportURL: URL?
@@ -38,7 +39,12 @@ struct SettingsView: View {
                 Label("小组件（即将推出）", systemImage: "rectangle.3.group")
                 Button { exportRecords() } label: { Label("导出记录 CSV", systemImage: "square.and.arrow.up") }
             }
-            Section("隐私") { Text("你的戒烟资料与记录目前仅保存在这台设备上。").font(.footnote) }
+            Section("隐私") {
+                Toggle("打开应用时验证身份", isOn: $privacyLockEnabled)
+                Text("开启后，应用回到前台时需要 Face ID 或设备密码解锁。你的戒烟资料与记录仍只保存在这台设备上。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
         }
         .navigationTitle("设置")
         .onAppear {

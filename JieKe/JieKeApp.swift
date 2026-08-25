@@ -5,7 +5,7 @@ import SwiftUI
 struct QuitSmokingMomentApp: App {
     var body: some Scene {
         WindowGroup {
-            RootView()
+            PrivacyProtectedView { RootView() }
         }
         .modelContainer(for: [QuitProfile.self, CravingRecord.self])
     }
