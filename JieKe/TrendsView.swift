@@ -172,7 +172,7 @@ private struct ScreenTimeTrendCard: View {
                     }
                 }
                 .chartXAxis {
-                    AxisMarks(values: .automatic(desiredCount: 4)) { AxisValueLabel() }
+                    AxisMarks(values: visibleLabels) { AxisValueLabel() }
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 190)
@@ -190,6 +190,17 @@ private struct ScreenTimeTrendCard: View {
         }
         .padding(18)
         .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+    }
+
+    private var visibleLabels: [String] {
+        let preferredIndices: [Int]
+        switch period {
+        case .day: preferredIndices = [0, 6, 12, 18, 23]
+        case .week: preferredIndices = [0, 2, 4, 6]
+        case .month: preferredIndices = [0, 7, 14, 21, points.count - 1]
+        case .year: preferredIndices = [0, 3, 6, 9, 11]
+        }
+        return preferredIndices.compactMap { points.indices.contains($0) ? points[$0].label : nil }
     }
 }
 
