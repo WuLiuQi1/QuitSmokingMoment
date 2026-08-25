@@ -47,9 +47,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.quitsmokingmoment.app.widget
         PRODUCT_NAME: QuitSmokingMomentWidget
-        GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_CFBundleDisplayName: 戒刻小组件
-        INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier: com.apple.widgetkit-extension
-        INFOPLIST_KEY_NSExtension_NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).QuitSmokingMomentWidgetBundle
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: Widget/Info.plist
         CODE_SIGN_ENTITLEMENTS: Widget/QuitSmokingMomentWidget.entitlements
         APPLICATION_EXTENSION_API_ONLY: YES
