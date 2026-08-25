@@ -103,35 +103,34 @@ struct TrendsView: View {
 
         switch selectedPeriod {
         case .day:
+            let grouped = Dictionary(grouping: periodRecords, by: { calendar.component(.hour, from: $0.createdAt) })
             return (0..<24).compactMap { hour in
                 guard calendar.date(bySettingHour: hour, minute: 0, second: 0, of: now) != nil else { return nil }
-                let matches = periodRecords.filter { calendar.component(.hour, from: $0.createdAt) == hour }
-                return TrendPoint(label: String(format: "%02d", hour), records: matches)
+                return TrendPoint(label: String(format: "%02d", hour), records: grouped[hour] ?? [])
             }
         case .week:
             guard let week = calendar.dateInterval(of: .weekOfYear, for: now) else { return [] }
+            let grouped = Dictionary(grouping: periodRecords, by: { calendar.startOfDay(for: $0.createdAt) })
             return (0..<7).compactMap { offset in
                 guard let date = calendar.date(byAdding: .day, value: offset, to: week.start) else { return nil }
-                let matches = records.filter { calendar.isDate($0.createdAt, inSameDayAs: date) }
-                return TrendPoint(label: date.formatted(.dateTime.month().day()), records: matches)
+                return TrendPoint(label: date.formatted(.dateTime.month().day()), records: grouped[calendar.startOfDay(for: date)] ?? [])
             }
         case .month:
             guard let dayRange = calendar.range(of: .day, in: .month, for: now) else { return [] }
+            let grouped = Dictionary(grouping: periodRecords, by: { calendar.component(.day, from: $0.createdAt) })
             return dayRange.compactMap { day in
                 guard let date = calendar.date(bySetting: .day, value: day, of: now) else { return nil }
-                let matches = records.filter { calendar.isDate($0.createdAt, inSameDayAs: date) }
-                return TrendPoint(label: "\(day)", records: matches)
+                return TrendPoint(label: "\(day)", records: grouped[day] ?? [])
             }
         case .year:
+            let year = calendar.component(.year, from: now)
+            let grouped = Dictionary(grouping: periodRecords, by: { calendar.component(.month, from: $0.createdAt) })
             return (1...12).compactMap { month in
                 var components = calendar.dateComponents([.year], from: now)
                 components.month = month
                 components.day = 1
                 guard calendar.date(from: components) != nil else { return nil }
-                let matches = records.filter {
-                    calendar.component(.year, from: $0.createdAt) == calendar.component(.year, from: now)
-                    && calendar.component(.month, from: $0.createdAt) == month
-                }
+                let matches = grouped[month]?.filter { calendar.component(.year, from: $0.createdAt) == year } ?? []
                 return TrendPoint(label: "\(month)月", records: matches)
             }
         }

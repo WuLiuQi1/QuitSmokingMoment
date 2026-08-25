@@ -10,6 +10,7 @@ struct QuitCalendarView: View {
         let days = calendar.range(of: .day, in: .month, for: .now)!
         let leadingDays = calendar.component(.weekday, from: month.start) - 1
         let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
+        let dayStatuses = Dictionary(grouping: records.filter { month.contains($0.createdAt) }, by: { calendar.component(.day, from: $0.createdAt) })
 
         VStack(spacing: 10) {
             HStack {
@@ -25,8 +26,7 @@ struct QuitCalendarView: View {
                 ForEach(weekdays, id: \.self) { Text($0).font(.caption2).foregroundStyle(.secondary) }
                 ForEach(0..<leadingDays, id: \.self) { _ in Color.clear.frame(height: 32) }
                 ForEach(Array(days), id: \.self) { day in
-                    let date = calendar.date(bySetting: .day, value: day, of: month.start)!
-                    CalendarDay(day: day, records: records.filter { calendar.isDate($0.createdAt, inSameDayAs: date) })
+                    CalendarDay(day: day, records: dayStatuses[day] ?? [])
                 }
             }
         }
@@ -48,6 +48,6 @@ private struct CalendarDay: View {
             .frame(height: 5)
         }
         .frame(maxWidth: .infinity, minHeight: 32)
-        .background(Calendar.current.isDateInToday(Calendar.current.date(bySetting: .day, value: day, of: .now) ?? .now) ? Color.accentColor.opacity(0.12) : .clear, in: RoundedRectangle(cornerRadius: 8))
+        .background(Calendar.current.component(.day, from: .now) == day ? Color.accentColor.opacity(0.12) : .clear, in: RoundedRectangle(cornerRadius: 8))
     }
 }
