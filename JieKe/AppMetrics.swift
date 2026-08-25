@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 struct QuitMetrics {
     let profile: QuitProfile
@@ -45,6 +46,32 @@ struct QuitMetrics {
         default: return ("继续积累健康", "每一次拒绝，都是身体恢复的一步。", "figure.walk")
         }
     }
+
+    var achievements: [QuitAchievement] {
+        let quitDays = max(0, now.timeIntervalSince(profile.quitDate) / 86_400)
+        let relapseFreeDays = max(0, now.timeIntervalSince(relapseFreeStart) / 86_400)
+        return [
+            QuitAchievement(title: "迈出第一步", detail: "成功度过 1 次烟瘾", symbol: "figure.walk", tint: .blue, isUnlocked: successfullyHandledCravings >= 1),
+            QuitAchievement(title: "首日坚持", detail: "已戒烟满 24 小时", symbol: "sun.max.fill", tint: .orange, isUnlocked: quitDays >= 1),
+            QuitAchievement(title: "十次忍住", detail: "成功度过 10 次烟瘾", symbol: "hands.clap.fill", tint: .green, isUnlocked: successfullyHandledCravings >= 10),
+            QuitAchievement(title: "省下第一笔", detail: "累计节省满 ¥10", symbol: "yensign.circle.fill", tint: .mint, isUnlocked: savedMoney >= 10),
+            QuitAchievement(title: "一周新生活", detail: "已戒烟满 7 天", symbol: "calendar.badge.checkmark", tint: .purple, isUnlocked: quitDays >= 7),
+            QuitAchievement(title: "重新站稳", detail: "连续无复吸满 3 天", symbol: "shield.checkered", tint: .teal, isUnlocked: relapseFreeDays >= 3)
+        ]
+    }
+
+    var nextAchievement: QuitAchievement? {
+        achievements.first(where: { !$0.isUnlocked })
+    }
+}
+
+struct QuitAchievement: Identifiable {
+    let title: String
+    let detail: String
+    let symbol: String
+    let tint: Color
+    let isUnlocked: Bool
+    var id: String { title }
 }
 
 enum RecordChoices {

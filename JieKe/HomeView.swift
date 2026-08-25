@@ -6,6 +6,7 @@ struct HomeView: View {
     @Query(sort: \CravingRecord.createdAt, order: .reverse) private var records: [CravingRecord]
     @State private var showsRescue = false
     @State private var showsSettings = false
+    @State private var showsAchievements = false
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 60)) { timeline in
@@ -64,6 +65,10 @@ struct HomeView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
                         .liquidGlassCard(tint: .green.opacity(0.12), cornerRadius: 18)
+
+                        AchievementPreview(metrics: metrics) {
+                            showsAchievements = true
+                        }
                     }
                     .padding()
                 }
@@ -74,6 +79,53 @@ struct HomeView: View {
         .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("设置", systemImage: "gearshape") { showsSettings = true } } }
         .sheet(isPresented: $showsRescue) { NavigationStack { CravingRescueView() } }
         .sheet(isPresented: $showsSettings) { NavigationStack { SettingsView() } }
+        .sheet(isPresented: $showsAchievements) {
+            NavigationStack { AchievementsView(metrics: QuitMetrics(profile: profiles.first!, records: records, now: .now)) }
+        }
+    }
+}
+
+private struct AchievementPreview: View {
+    let metrics: QuitMetrics
+    let action: () -> Void
+
+    var body: some View {
+        let unlocked = metrics.achievements.filter(\.isUnlocked).count
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Label("我的成就", systemImage: "medal.fill")
+                        .font(.headline)
+                        .foregroundStyle(.yellow)
+                    Spacer()
+                    Text("\(unlocked)/\(metrics.achievements.count)")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.tertiary)
+                }
+                if let next = metrics.nextAchievement {
+                    Text("下一枚：\(next.title)")
+                        .font(.title3.bold())
+                        .foregroundStyle(.primary)
+                    Text(next.detail)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("全部解锁")
+                        .font(.title3.bold())
+                        .foregroundStyle(.primary)
+                    Text("你的每一次坚持都值得被记住。")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .liquidGlassCard(tint: .yellow.opacity(0.12), cornerRadius: 18)
+        }
+        .buttonStyle(.plain)
     }
 }
 
