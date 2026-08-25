@@ -87,6 +87,34 @@ struct TrendsView: View {
                         .padding(.vertical, 3)
                     }
                 }
+
+                Section("复盘回顾") {
+                    if relapseRecords.isEmpty {
+                        Text("还没有复吸记录。每一次坚持都会成为你的经验。")
+                            .foregroundStyle(.secondary)
+                    }
+                    ForEach(relapseRecords.prefix(5)) { record in
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                Text(record.createdAt, format: .dateTime.month().day().hour().minute())
+                                    .font(.subheadline.weight(.semibold))
+                                Spacer()
+                                Text("抽了 \(record.cigaretteCount) 根")
+                                    .foregroundStyle(.red)
+                            }
+                            Text("\(record.trigger) · \(record.mood)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            if !record.note.isEmpty {
+                                Label(record.note, systemImage: "arrow.uturn.right")
+                                    .font(.subheadline)
+                            } else {
+                                Text("尚未写下次准备动作").font(.caption).foregroundStyle(.tertiary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
             }
         }
         .scrollContentBackground(.hidden)
@@ -153,6 +181,10 @@ struct TrendsView: View {
             .sorted { lhs, rhs in
                 lhs.successRate == rhs.successRate ? lhs.totalCount > rhs.totalCount : lhs.successRate > rhs.successRate
             }
+    }
+
+    private var relapseRecords: [CravingRecord] {
+        Array(records.filter(\.didSmoke).reversed())
     }
 }
 
