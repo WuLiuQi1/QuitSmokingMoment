@@ -66,6 +66,26 @@ struct TrendsView: View {
                     if triggerSummary.isEmpty { Text("多记录几次后，这里会显示你的高风险诱因。").foregroundStyle(.secondary) }
                     ForEach(triggerSummary) { item in LabeledContent(item.name, value: "\(item.count) 次") }
                 }
+
+                Section("有效应对方式") {
+                    if copingSummary.isEmpty {
+                        Text("在烟瘾急救中选择喝水、走动或转移注意后，这里会告诉你哪种方式最有帮助。")
+                            .foregroundStyle(.secondary)
+                    }
+                    ForEach(copingSummary) { item in
+                        VStack(alignment: .leading, spacing: 7) {
+                            HStack {
+                                Label(item.name, systemImage: item.symbol)
+                                Spacer()
+                                Text("\(item.successCount) / \(item.totalCount) 次忍住")
+                                    .foregroundStyle(.secondary)
+                            }
+                            ProgressView(value: item.successRate)
+                                .tint(.green)
+                        }
+                        .padding(.vertical, 3)
+                    }
+                }
             }
         }
         .scrollContentBackground(.hidden)
@@ -125,6 +145,15 @@ struct TrendsView: View {
             .prefix(5)
             .map { $0 }
     }
+
+    private var copingSummary: [CopingSummary] {
+        let grouped = Dictionary(grouping: records.filter { !$0.copingMethod.isEmpty }, by: \.copingMethod)
+        return grouped
+            .map { CopingSummary(name: $0.key, records: $0.value) }
+            .sorted { lhs, rhs in
+                lhs.successRate == rhs.successRate ? lhs.totalCount > rhs.totalCount : lhs.successRate > rhs.successRate
+            }
+    }
 }
 
 private struct TrendPoint: Identifiable {
@@ -144,6 +173,27 @@ private struct TriggerSummary: Identifiable {
     let name: String
     let count: Int
     var id: String { name }
+}
+
+private struct CopingSummary: Identifiable {
+    let name: String
+    let totalCount: Int
+    let successCount: Int
+    var id: String { name }
+    var successRate: Double { totalCount == 0 ? 0 : Double(successCount) / Double(totalCount) }
+    var symbol: String {
+        switch name {
+        case "喝水": "drop.fill"
+        case "走动": "figure.walk"
+        default: "sparkles"
+        }
+    }
+
+    init(name: String, records: [CravingRecord]) {
+        self.name = name
+        totalCount = records.count
+        successCount = records.filter { !$0.didSmoke }.count
+    }
 }
 
 private struct ScreenTimeTrendCard: View {
