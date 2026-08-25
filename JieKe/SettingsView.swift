@@ -55,7 +55,7 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
             Section("健康与数据") {
-                Label("HealthKit（即将推出）", systemImage: "heart.text.square")
+                NavigationLink { HealthDashboardView() } label: { Label("HealthKit", systemImage: "heart.text.square") }
                 Label("小组件（即将推出）", systemImage: "rectangle.3.group")
                 Button { exportRecords() } label: { Label("导出记录 CSV", systemImage: "square.and.arrow.up") }
                 Button { exportBackup() } label: { Label("导出完整备份", systemImage: "externaldrive.badge.checkmark") }
