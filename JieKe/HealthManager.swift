@@ -9,6 +9,7 @@ final class HealthManager: ObservableObject {
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var lastUpdated: Date?
+    @Published private(set) var recentSteps: [HealthDayMetric] = []
     private let store = HKHealthStore()
 
     var isAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
@@ -29,7 +30,8 @@ final class HealthManager: ObservableObject {
         async let steps: Void = loadSteps()
         async let heart: Void = loadHeartRate()
         async let sleep: Void = loadSleep()
-        _ = await (steps, heart, sleep)
+        async let recent: Void = loadRecentSteps()
+        _ = await (steps, heart, sleep, recent)
         lastUpdated = .now
         isLoading = false
     }
@@ -42,6 +44,22 @@ final class HealthManager: ObservableObject {
                 continuation.resume(returning: Int(result?.sumQuantity()?.doubleValue(for: .count()) ?? 0))
             })
         }
+    }
+
+    private func loadRecentSteps() async {
+        guard let type = HKQuantityType.quantityType(forIdentifier: .stepCount) else { return }
+        var values: [HealthDayMetric] = []
+        for offset in stride(from: 6, through: 0, by: -1) {
+            guard let start = Calendar.current.date(byAdding: .day, value: -offset, to: Calendar.current.startOfDay(for: .now)), let end = Calendar.current.date(byAdding: .day, value: 1, to: start) else { continue }
+            let predicate = HKQuery.predicateForSamples(withStart: start, end: end)
+            let steps: Int = await withCheckedContinuation { continuation in
+                store.execute(HKStatisticsQuery(quantityType: type, quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, _ in
+                    continuation.resume(returning: Int(result?.sumQuantity()?.doubleValue(for: .count()) ?? 0))
+                })
+            }
+            values.append(HealthDayMetric(date: start, stepCount: steps))
+        }
+        recentSteps = values
     }
 
     private func loadHeartRate() async {
@@ -65,4 +83,10 @@ final class HealthManager: ObservableObject {
             })
         }
     }
+}
+
+struct HealthDayMetric: Identifiable {
+    let date: Date
+    let stepCount: Int
+    var id: Date { date }
 }

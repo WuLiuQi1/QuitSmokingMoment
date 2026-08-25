@@ -15,11 +15,16 @@ struct SettingsView: View {
     @AppStorage("highRiskReminderEnabled") private var highRiskReminderEnabled = false
     @AppStorage("achievementNotificationsEnabled") private var achievementNotificationsEnabled = false
     @AppStorage("healthMilestoneNotificationsEnabled") private var healthMilestoneNotificationsEnabled = false
+    @AppStorage("goalNotificationsEnabled") private var goalNotificationsEnabled = false
+    @AppStorage("reflectionReminderEnabled") private var reflectionReminderEnabled = false
+    @AppStorage("reflectionReminderHour") private var reflectionReminderHour = 21
+    @AppStorage("reflectionReminderMinute") private var reflectionReminderMinute = 0
     @AppStorage("privacyLockEnabled") private var privacyLockEnabled = false
     @AppStorage("reduceMotionInApp") private var reduceMotionInApp = false
     @AppStorage("highContrastInApp") private var highContrastInApp = false
     @AppStorage("liveActivityEnabled") private var liveActivityEnabled = false
     @State private var reminderTime = Calendar.current.date(from: DateComponents(hour: 20, minute: 0)) ?? .now
+    @State private var reflectionReminderTime = Calendar.current.date(from: DateComponents(hour: 21, minute: 0)) ?? .now
     @State private var notificationError = false
     @State private var exportURL: URL?
     @State private var showsExportSheet = false
@@ -51,9 +56,14 @@ struct SettingsView: View {
             Section("阶段提醒") {
                 Toggle("成就解锁提醒", isOn: $achievementNotificationsEnabled)
                 Toggle("健康里程碑提醒", isOn: $healthMilestoneNotificationsEnabled)
+                Toggle("目标完成提醒", isOn: $goalNotificationsEnabled)
                 Text("成就和健康阶段达到时，会在本机显示提醒。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+            Section("每日复盘提醒") {
+                Toggle("提醒我写复盘", isOn: $reflectionReminderEnabled)
+                if reflectionReminderEnabled { DatePicker("提醒时间", selection: $reflectionReminderTime, displayedComponents: .hourAndMinute) }
             }
             Section("健康与数据") {
                 NavigationLink { HealthDashboardView() } label: { Label("HealthKit", systemImage: "heart.text.square") }
@@ -84,6 +94,7 @@ struct SettingsView: View {
         .navigationTitle("设置")
         .onAppear {
             reminderTime = Calendar.current.date(from: DateComponents(hour: reminderHour, minute: reminderMinute)) ?? .now
+            reflectionReminderTime = Calendar.current.date(from: DateComponents(hour: reflectionReminderHour, minute: reflectionReminderMinute)) ?? .now
         }
         .onChange(of: notificationsEnabled) { _, enabled in
             Task {
@@ -130,6 +141,23 @@ struct SettingsView: View {
                 }
                 await NotificationManager.scheduleNextHealthMilestone(after: profile.quitDate)
             }
+        }
+        .onChange(of: goalNotificationsEnabled) { _, enabled in
+            Task {
+                guard enabled else { return }
+                if !await NotificationManager.requestAuthorization() { goalNotificationsEnabled = false; notificationError = true }
+            }
+        }
+        .onChange(of: reflectionReminderEnabled) { _, enabled in
+            Task {
+                guard enabled else { NotificationManager.cancelReflectionReminder(); return }
+                guard await NotificationManager.requestAuthorization() else { reflectionReminderEnabled = false; notificationError = true; return }
+                await saveReflectionReminder()
+            }
+        }
+        .onChange(of: reflectionReminderTime) { _, _ in
+            guard reflectionReminderEnabled else { return }
+            Task { await saveReflectionReminder() }
         }
         .onChange(of: liveActivityEnabled) { _, enabled in
             guard let profile = profiles.first else { return }
@@ -184,6 +212,13 @@ struct SettingsView: View {
         reminderHour = components.hour ?? 20
         reminderMinute = components.minute ?? 0
         await NotificationManager.scheduleDailyReminder(at: reminderTime)
+    }
+
+    private func saveReflectionReminder() async {
+        let components = Calendar.current.dateComponents([.hour, .minute], from: reflectionReminderTime)
+        reflectionReminderHour = components.hour ?? 21
+        reflectionReminderMinute = components.minute ?? 0
+        await NotificationManager.scheduleReflectionReminder(at: reflectionReminderTime)
     }
 
     private func exportRecords() {

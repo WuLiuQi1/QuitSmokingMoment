@@ -3,6 +3,8 @@ import SwiftUI
 struct HealthMilestonesView: View {
     let metrics: QuitMetrics
 
+    private var completedCount: Int { metrics.healthMilestones.filter(\.isCompleted).count }
+
     var body: some View {
         ZStack {
             LiquidGlassBackdrop()
@@ -13,6 +15,15 @@ struct HealthMilestonesView: View {
                     Text("以下为一般健康信息，恢复速度因人而异；如有不适，请咨询医生。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack { Text("里程碑进度").font(.headline); Spacer(); Text("\(completedCount) / \(metrics.healthMilestones.count)").foregroundStyle(.secondary) }
+                        ProgressView(value: Double(completedCount), total: Double(metrics.healthMilestones.count))
+                            .tint(.green)
+                        if let next = metrics.nextHealthMilestone { Text("下一阶段：\(next.title) · \(next.remainingText)").font(.caption).foregroundStyle(.secondary) }
+                    }
+                    .padding()
+                    .liquidGlassCard(tint: .green.opacity(0.12), cornerRadius: 18)
 
                     ForEach(metrics.healthMilestones) { milestone in
                         HealthMilestoneRow(milestone: milestone)

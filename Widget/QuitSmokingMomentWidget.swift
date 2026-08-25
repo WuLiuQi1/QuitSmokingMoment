@@ -28,27 +28,36 @@ struct QuitSmokingMomentWidget: Widget {
     let kind = "QuitSmokingMomentWidget"
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: QuitWidgetProvider()) { entry in
-            VStack(alignment: .leading, spacing: 8) {
-                Label("戒刻", systemImage: "lungs.fill")
-                    .font(.headline)
-                    .foregroundStyle(.mint)
-                Text(entry.quitDate, style: .timer)
-                    .font(.system(.title2, design: .rounded, weight: .bold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                HStack {
-                    Label("少抽 \(entry.avoided) 根", systemImage: "checkmark.circle.fill")
-                    Spacer()
-                    Text(entry.saved, format: .currency(code: "CNY"))
-                }
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            }
-            .containerBackground(.fill.tertiary, for: .widget)
+            QuitWidgetContent(entry: entry)
         }
         .configurationDisplayName("戒烟进度")
         .description("显示戒烟时长、少抽和节省金额。")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular, .accessoryInline])
+    }
+}
+
+private struct QuitWidgetContent: View {
+    let entry: QuitWidgetEntry
+    @Environment(\.widgetFamily) private var family
+    var body: some View {
+        Group {
+            switch family {
+            case .accessoryCircular:
+                ZStack { AccessoryWidgetBackground(); Image(systemName: "lungs.fill").font(.title2); Text(entry.quitDate, style: .timer).font(.caption2).offset(y: 16) }
+            case .accessoryRectangular:
+                VStack(alignment: .leading) { Text("已戒烟").font(.caption); Text(entry.quitDate, style: .timer).font(.headline); Text("少抽 \(entry.avoided) 根").font(.caption2) }
+            case .accessoryInline:
+                Text("戒刻：已戒烟 \(entry.quitDate, style: .timer)，少抽 \(entry.avoided) 根")
+            default:
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("戒刻", systemImage: "lungs.fill").font(.headline).foregroundStyle(.mint)
+                    Text(entry.quitDate, style: .timer).font(.system(.title2, design: .rounded, weight: .bold)).lineLimit(1).minimumScaleFactor(0.7)
+                    HStack { Label("少抽 \(entry.avoided) 根", systemImage: "checkmark.circle.fill"); Spacer(); Text(entry.saved, format: .currency(code: "CNY")) }.font(.caption).foregroundStyle(.secondary)
+                    Link(destination: URL(string: "jieke://rescue")!) { Label("烟瘾急救", systemImage: "shield.lefthalf.filled").font(.caption.weight(.semibold)) }
+                }
+                .containerBackground(.fill.tertiary, for: .widget)
+            }
+        }
     }
 }
 

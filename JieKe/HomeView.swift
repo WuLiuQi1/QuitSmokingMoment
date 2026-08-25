@@ -184,5 +184,7 @@ private struct MetricCard: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical)
             .liquidGlassCard(cornerRadius: 16)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("\(title)：\(value)")
     }
 }

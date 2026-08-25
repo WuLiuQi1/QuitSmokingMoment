@@ -6,6 +6,7 @@ enum NotificationManager {
     static let reminderIdentifier = "daily-quit-reminder"
     static let riskReminderIdentifier = "high-risk-reminder"
     static let healthMilestoneIdentifier = "health-milestone-reminder"
+    static let reflectionReminderIdentifier = "daily-reflection-reminder"
 
     static func requestAuthorization() async -> Bool {
         do {
@@ -77,5 +78,21 @@ enum NotificationManager {
 
     static func cancelHealthMilestoneReminder() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [healthMilestoneIdentifier])
+    }
+
+    static func scheduleReflectionReminder(at date: Date) async {
+        let content = UNMutableNotificationContent()
+        content.title = "花一分钟复盘今天"
+        content.body = "记下今天的烟瘾、感受和最有用的应对方法。"
+        content.sound = .default
+        let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+        let request = UNNotificationRequest(identifier: reflectionReminderIdentifier, content: content, trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: true))
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: [reflectionReminderIdentifier])
+        try? await center.add(request)
+    }
+
+    static func cancelReflectionReminder() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [reflectionReminderIdentifier])
     }
 }

@@ -295,6 +295,8 @@ private struct ScreenTimeTrendCard: View {
         }
         .padding(18)
         .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(period.rawValue)烟瘾趋势：共 \(successCount + relapseCount) 次，其中忍住 \(successCount) 次，复吸 \(relapseCount) 次")
     }
 
     private var visibleLabels: [String] {

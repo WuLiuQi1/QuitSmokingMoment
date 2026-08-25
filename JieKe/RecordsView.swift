@@ -79,6 +79,7 @@ private enum RecordFilter: CaseIterable, Identifiable {
 
 private struct RecordRow: View {
     let record: CravingRecord
+    @State private var audioPlayer: AVAudioPlayer?
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: record.didSmoke ? "exclamationmark.triangle.fill" : "checkmark.circle.fill").foregroundStyle(record.didSmoke ? .orange : .green)
@@ -89,6 +90,16 @@ private struct RecordRow: View {
                     Label("含附件", systemImage: record.voiceMemoData != nil ? "photo.on.rectangle.angled" : "photo")
                         .font(.caption)
                         .foregroundStyle(.tint)
+                }
+                if let voiceData = record.voiceMemoData {
+                    Button {
+                        audioPlayer = try? AVAudioPlayer(data: voiceData)
+                        audioPlayer?.play()
+                    } label: {
+                        Label("播放语音备注", systemImage: "play.circle.fill")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .buttonStyle(.borderless)
                 }
             }
             Spacer(); Text(record.createdAt, format: .dateTime.month().day().hour().minute()).font(.caption).foregroundStyle(.secondary)

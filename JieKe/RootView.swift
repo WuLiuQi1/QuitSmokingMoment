@@ -4,6 +4,7 @@ import SwiftUI
 struct RootView: View {
     @Query private var profiles: [QuitProfile]
     @AppStorage("reduceMotionInApp") private var reduceMotionInApp = false
+    @State private var showsRescueFromWidget = false
     var body: some View {
         Group {
             if profiles.isEmpty { OnboardingView() } else { MainTabView() }
@@ -11,6 +12,10 @@ struct RootView: View {
         .transaction { transaction in
             if reduceMotionInApp { transaction.animation = nil }
         }
+        .onOpenURL { url in
+            if url.scheme == "jieke", url.host == "rescue" { showsRescueFromWidget = true }
+        }
+        .sheet(isPresented: $showsRescueFromWidget) { NavigationStack { CravingRescueView() } }
     }
 }
 
