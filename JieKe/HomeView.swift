@@ -36,6 +36,23 @@ struct HomeView: View {
                             .tint(.blue)
                             .liquidGlassProminentButton()
                             .controlSize(.large)
+                        if let insight = RiskInsight.from(records: records) {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Label("高风险提示", systemImage: "exclamationmark.shield.fill")
+                                    .font(.headline)
+                                    .foregroundStyle(.orange)
+                                Text("你在 (insight.timeText) 前后更容易想抽烟")
+                                    .font(.title3.bold())
+                                Text("常见诱因：(insight.trigger)。提前准备一杯水或走动两分钟。")
+                                    .foregroundStyle(.secondary)
+                                Button("提前开始急救") { showsRescue = true }
+                                    .buttonStyle(.bordered)
+                                    .tint(.orange)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding()
+                            .liquidGlassCard(tint: .orange.opacity(0.12), cornerRadius: 18)
+                        }
                         VStack(alignment: .leading, spacing: 10) {
                             Label("健康里程碑", systemImage: metrics.milestone.symbol).font(.headline)
                             Text(metrics.milestone.title).font(.title3.bold())
