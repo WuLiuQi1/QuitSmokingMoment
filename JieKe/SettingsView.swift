@@ -36,7 +36,7 @@ struct SettingsView: View {
     @State private var showsRestoreConfirmation = false
     @State private var restoreError = false
     var body: some View {
-        List {
+        AnyView(List {
             if let profile = profiles.first { Section("戒烟资料") { ProfileSettingsForm(profile: profile) } }
             Section("提醒") {
                 Toggle("每日戒烟提醒", isOn: $notificationsEnabled)
@@ -90,7 +90,7 @@ struct SettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
-        }
+        })
         .navigationTitle("设置")
         .onAppear {
             reminderTime = Calendar.current.date(from: DateComponents(hour: reminderHour, minute: reminderMinute)) ?? .now
