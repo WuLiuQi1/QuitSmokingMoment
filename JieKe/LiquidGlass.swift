@@ -22,8 +22,9 @@ extension View {
 }
 
 struct LiquidGlassBackdrop: View {
+    @AppStorage("highContrastInApp") private var highContrastInApp = false
     var body: some View {
-        Color(uiColor: .systemGroupedBackground)
+        Color(uiColor: highContrastInApp ? .systemBackground : .systemGroupedBackground)
         .ignoresSafeArea()
         .allowsHitTesting(false)
     }

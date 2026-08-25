@@ -3,9 +3,13 @@ import SwiftUI
 
 struct RootView: View {
     @Query private var profiles: [QuitProfile]
+    @AppStorage("reduceMotionInApp") private var reduceMotionInApp = false
     var body: some View {
         Group {
             if profiles.isEmpty { OnboardingView() } else { MainTabView() }
+        }
+        .transaction { transaction in
+            if reduceMotionInApp { transaction.animation = nil }
         }
     }
 }

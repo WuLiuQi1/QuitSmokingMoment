@@ -32,8 +32,10 @@ final class CravingRecord {
     var copingMethod: String
     var didSmoke: Bool
     var cigaretteCount: Int
+    var attachmentImageData: Data?
+    var voiceMemoData: Data?
 
-    init(createdAt: Date = .now, intensity: Int, trigger: String = "", mood: String = "平静", note: String = "", copingMethod: String = "", didSmoke: Bool = false, cigaretteCount: Int = 0) {
+    init(createdAt: Date = .now, intensity: Int, trigger: String = "", mood: String = "平静", note: String = "", copingMethod: String = "", didSmoke: Bool = false, cigaretteCount: Int = 0, attachmentImageData: Data? = nil, voiceMemoData: Data? = nil) {
         self.createdAt = createdAt
         self.intensity = intensity
         self.trigger = trigger
@@ -42,6 +44,8 @@ final class CravingRecord {
         self.copingMethod = copingMethod
         self.didSmoke = didSmoke
         self.cigaretteCount = cigaretteCount
+        self.attachmentImageData = attachmentImageData
+        self.voiceMemoData = voiceMemoData
     }
 }
 
