@@ -8,6 +8,7 @@ struct HomeView: View {
     @State private var showsSettings = false
     @State private var showsAchievements = false
     @State private var showsHealthMilestones = false
+    @State private var showsDailyPlan = false
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 60)) { timeline in
@@ -41,6 +42,9 @@ struct HomeView: View {
                             .tint(.blue)
                             .liquidGlassProminentButton()
                             .controlSize(.large)
+                        DailyPlanCard(successCount: records.filter { !$0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count) {
+                            showsDailyPlan = true
+                        }
                         if let insight = RiskInsight.from(records: records) {
                             VStack(alignment: .leading, spacing: 10) {
                                 Label("高风险提示", systemImage: "exclamationmark.shield.fill")
@@ -97,6 +101,9 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showsHealthMilestones) {
             NavigationStack { HealthMilestonesView(metrics: QuitMetrics(profile: profiles.first!, records: records, now: .now)) }
+        }
+        .sheet(isPresented: $showsDailyPlan) {
+            NavigationStack { DailyPlanView(successCount: records.filter { !$0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count) }
         }
     }
 }
