@@ -183,15 +183,7 @@ struct SettingsView: View {
             if let backupURL { ActivityShareSheet(items: [backupURL]) }
         }
         .fileImporter(isPresented: $showsBackupImporter, allowedContentTypes: [.json]) { result in
-            do {
-                let url = try result.get()
-                let accessing = url.startAccessingSecurityScopedResource()
-                defer { if accessing { url.stopAccessingSecurityScopedResource() } }
-                pendingBackup = try BackupManager.load(from: url)
-                showsRestoreConfirmation = true
-            } catch {
-                restoreError = true
-            }
+            handleBackupImport(result)
         }
         .alert("恢复备份？", isPresented: $showsRestoreConfirmation) {
             Button("取消", role: .cancel) { pendingBackup = nil }
@@ -244,6 +236,18 @@ struct SettingsView: View {
         do {
             try BackupManager.restore(pendingBackup, profiles: profiles, records: records, reflections: reflections, context: modelContext)
             self.pendingBackup = nil
+        } catch {
+            restoreError = true
+        }
+    }
+
+    private func handleBackupImport(_ result: Result<URL, Error>) {
+        do {
+            let url = try result.get()
+            let accessing = url.startAccessingSecurityScopedResource()
+            defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+            pendingBackup = try BackupManager.load(from: url)
+            showsRestoreConfirmation = true
         } catch {
             restoreError = true
         }
