@@ -48,7 +48,7 @@ struct HomeView: View {
                                     .foregroundStyle(.orange)
                                 Text("你在 \(insight.timeText) 前后更容易想抽烟")
                                     .font(.title3.bold())
-                                Text("常见诱因：(insight.trigger)。提前准备一杯水或走动两分钟。")
+                                Text("常见诱因：\(insight.trigger)。提前准备一杯水或走动两分钟。")
                                     .foregroundStyle(.secondary)
                                 Button("提前开始急救") { showsRescue = true }
                                     .buttonStyle(.bordered)
