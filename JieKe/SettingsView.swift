@@ -145,7 +145,7 @@ struct SettingsView: View {
         .onChange(of: goalNotificationsEnabled) { _, enabled in
             Task {
                 guard enabled else { return }
-                if !await NotificationManager.requestAuthorization() { goalNotificationsEnabled = false; notificationError = true }
+                if !(await NotificationManager.requestAuthorization()) { goalNotificationsEnabled = false; notificationError = true }
             }
         }
         .onChange(of: reflectionReminderEnabled) { _, enabled in
