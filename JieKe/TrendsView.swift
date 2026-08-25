@@ -153,17 +153,12 @@ private struct ScreenTimeTrendCard: View {
     let relapseCount: Int
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .firstTextBaseline) {
+        HStack(alignment: .bottom, spacing: 18) {
+            VStack(alignment: .leading, spacing: 12) {
                 Text("\(period.rawValue)烟瘾")
-                    .font(.subheadline.weight(.semibold))
+                    .font(.headline)
                     .foregroundStyle(.secondary)
-                Spacer()
-                Text("\(successCount + relapseCount) 次")
-                    .font(.title2.weight(.bold))
-            }
 
-            HStack(spacing: 14) {
                 Chart(points) { item in
                     BarMark(x: .value("时间", item.label), y: .value("次数", item.successCount))
                         .foregroundStyle(Color.green.gradient)
@@ -180,14 +175,18 @@ private struct ScreenTimeTrendCard: View {
                     AxisMarks(values: .automatic(desiredCount: 4)) { AxisValueLabel() }
                 }
                 .frame(maxWidth: .infinity)
-                .frame(height: 172)
-
-                VStack(alignment: .leading, spacing: 18) {
-                    TrendLegend(color: .green, title: "忍住", value: "\(successCount) 次")
-                    TrendLegend(color: .red, title: "复吸", value: "\(relapseCount) 次")
-                }
-                .frame(width: 86, alignment: .leading)
+                .frame(height: 190)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            VStack(alignment: .leading, spacing: 24) {
+                Text("\(successCount + relapseCount) 次")
+                    .font(.system(.title, design: .rounded, weight: .bold))
+                TrendLegend(color: .green, title: "忍住", value: "\(successCount) 次")
+                TrendLegend(color: .red, title: "复吸", value: "\(relapseCount) 次")
+            }
+            .frame(width: 92, alignment: .leading)
+            .padding(.bottom, 4)
         }
         .padding(18)
         .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
