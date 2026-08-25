@@ -28,21 +28,14 @@ struct TrendsView: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 40)
                     } else {
-                        Chart(periodTrendPoints) { item in
-                            BarMark(x: .value("时间", item.label), y: .value("次数", item.successCount))
-                                .foregroundStyle(Color.green)
-                                .position(by: .value("结果", "忍住了"))
-                            BarMark(x: .value("时间", item.label), y: .value("次数", item.relapseCount))
-                                .foregroundStyle(Color.red)
-                                .position(by: .value("结果", "没忍住"))
-                        }
-                        .chartYAxis { AxisMarks(position: .leading) }
-                        .frame(height: 240)
-                        HStack(spacing: 16) {
-                            Label("绿色：忍住没抽", systemImage: "circle.fill").foregroundStyle(.green)
-                            Label("红色：复吸", systemImage: "circle.fill").foregroundStyle(.red)
-                        }
-                        .font(.caption)
+                        ScreenTimeTrendCard(
+                            period: selectedPeriod,
+                            points: periodTrendPoints,
+                            successCount: periodSummary.successCount,
+                            relapseCount: periodSummary.relapseCount
+                        )
+                        .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                        .listRowBackground(Color.clear)
                     }
                 }
 
@@ -151,4 +144,69 @@ private struct TriggerSummary: Identifiable {
     let name: String
     let count: Int
     var id: String { name }
+}
+
+private struct ScreenTimeTrendCard: View {
+    let period: SummaryPeriod
+    let points: [TrendPoint]
+    let successCount: Int
+    let relapseCount: Int
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("\(period.rawValue)烟瘾")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text("\(successCount + relapseCount) 次")
+                    .font(.title2.weight(.bold))
+            }
+
+            HStack(spacing: 14) {
+                Chart(points) { item in
+                    BarMark(x: .value("时间", item.label), y: .value("次数", item.successCount))
+                        .foregroundStyle(Color.green.gradient)
+                    BarMark(x: .value("时间", item.label), y: .value("次数", item.relapseCount))
+                        .foregroundStyle(Color.red.gradient)
+                }
+                .chartYAxis {
+                    AxisMarks(position: .trailing) { value in
+                        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [3, 3]))
+                        AxisValueLabel { if let count = value.as(Int.self) { Text("\(count)") } }
+                    }
+                }
+                .chartXAxis {
+                    AxisMarks(values: .automatic(desiredCount: 4)) { AxisValueLabel() }
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 172)
+
+                VStack(alignment: .leading, spacing: 18) {
+                    TrendLegend(color: .green, title: "忍住", value: "\(successCount) 次")
+                    TrendLegend(color: .red, title: "复吸", value: "\(relapseCount) 次")
+                }
+                .frame(width: 86, alignment: .leading)
+            }
+        }
+        .padding(18)
+        .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+    }
+}
+
+private struct TrendLegend: View {
+    let color: Color
+    let title: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Label(title, systemImage: "circle.fill")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(color)
+            Text(value)
+                .font(.headline)
+                .foregroundStyle(.primary)
+        }
+    }
 }
