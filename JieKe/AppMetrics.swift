@@ -23,6 +23,18 @@ struct QuitMetrics {
     var todayCravings: Int { records.filter { Calendar.current.isDateInToday($0.createdAt) }.count }
     var successfullyHandledCravings: Int { records.filter { !$0.didSmoke }.count }
 
+    var relapseFreeStart: Date {
+        max(profile.quitDate, records.filter(\.didSmoke).map(\.createdAt).max() ?? profile.quitDate)
+    }
+
+    var relapseFreeText: String {
+        guard now >= relapseFreeStart else { return "刚刚开始" }
+        let elapsed = Calendar.current.dateComponents([.day, .hour], from: relapseFreeStart, to: now)
+        let days = elapsed.day ?? 0
+        let hours = elapsed.hour ?? 0
+        return days > 0 ? "\(days) 天 \(hours) 小时" : "\(hours) 小时"
+    }
+
     var milestone: (title: String, detail: String, symbol: String) {
         let hours = max(0, now.timeIntervalSince(profile.quitDate) / 3_600)
         switch hours {

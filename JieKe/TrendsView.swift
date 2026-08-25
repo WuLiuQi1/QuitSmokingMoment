@@ -53,6 +53,7 @@ struct TrendsView: View {
                     LabeledContent("节省", value: quitMetrics.savedMoney.formatted(.currency(code: "CNY")))
                     LabeledContent("少抽", value: "\(quitMetrics.avoidedCigarettesText) 根")
                     LabeledContent("已成功度过", value: "\(quitMetrics.successfullyHandledCravings) 次")
+                    LabeledContent("连续无复吸", value: quitMetrics.relapseFreeText)
                     Text("每成功忍住 1 次，记为少抽 1 支，并按每包价格换算节省金额。")
                         .font(.caption)
                         .foregroundStyle(.secondary)

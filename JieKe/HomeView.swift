@@ -19,6 +19,9 @@ struct HomeView: View {
                             Text("已戒烟").foregroundStyle(.secondary)
                             Text(metrics.elapsedText).font(.system(.largeTitle, design: .rounded, weight: .bold)).contentTransition(.numericText())
                             Text(profile.quitDate, format: .dateTime.year().month().day().hour().minute()).font(.caption).foregroundStyle(.secondary)
+                            Label("连续无复吸 (metrics.relapseFreeText)", systemImage: "flame.fill")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.orange)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 28)
