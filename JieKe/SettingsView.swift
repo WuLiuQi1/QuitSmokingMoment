@@ -18,6 +18,7 @@ struct SettingsView: View {
     @AppStorage("privacyLockEnabled") private var privacyLockEnabled = false
     @AppStorage("reduceMotionInApp") private var reduceMotionInApp = false
     @AppStorage("highContrastInApp") private var highContrastInApp = false
+    @AppStorage("liveActivityEnabled") private var liveActivityEnabled = false
     @State private var reminderTime = Calendar.current.date(from: DateComponents(hour: 20, minute: 0)) ?? .now
     @State private var notificationError = false
     @State private var exportURL: URL?
@@ -56,7 +57,8 @@ struct SettingsView: View {
             }
             Section("健康与数据") {
                 NavigationLink { HealthDashboardView() } label: { Label("HealthKit", systemImage: "heart.text.square") }
-                Label("小组件（即将推出）", systemImage: "rectangle.3.group")
+                Label("小组件", systemImage: "rectangle.3.group")
+                Toggle("显示戒烟实时活动", isOn: $liveActivityEnabled)
                 Button { exportRecords() } label: { Label("导出记录 CSV", systemImage: "square.and.arrow.up") }
                 Button { exportBackup() } label: { Label("导出完整备份", systemImage: "externaldrive.badge.checkmark") }
                 Button { showsBackupImporter = true } label: { Label("从备份恢复", systemImage: "externaldrive.badge.plus") }
@@ -127,6 +129,13 @@ struct SettingsView: View {
                     return
                 }
                 await NotificationManager.scheduleNextHealthMilestone(after: profile.quitDate)
+            }
+        }
+        .onChange(of: liveActivityEnabled) { _, enabled in
+            guard let profile = profiles.first else { return }
+            Task {
+                if enabled { LiveActivityManager.start(profile: profile, records: records) }
+                else { await LiveActivityManager.endAll() }
             }
         }
         .alert("未获得通知权限", isPresented: $notificationError) {

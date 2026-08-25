@@ -98,6 +98,8 @@ struct HomeView: View {
                     }
                     .padding()
                 }
+                .onAppear { publishSystemSurfaces(profile: profile) }
+                .onChange(of: records.count) { _, _ in publishSystemSurfaces(profile: profile) }
                 }
             }
         }
@@ -117,6 +119,11 @@ struct HomeView: View {
         .sheet(isPresented: $showsDailyReflection) {
             NavigationStack { DailyReflectionView(reflection: reflections.first(where: { Calendar.current.isDateInToday($0.createdAt) }), successCount: records.filter { !$0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count, relapseCount: records.filter { $0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count) }
         }
+    }
+
+    private func publishSystemSurfaces(profile: QuitProfile) {
+        WidgetDataStore.publish(profile: profile, records: records)
+        Task { await LiveActivityManager.update(profile: profile, records: records) }
     }
 }
 
