@@ -7,6 +7,7 @@ struct HomeView: View {
     @State private var showsRescue = false
     @State private var showsSettings = false
     @State private var showsAchievements = false
+    @State private var showsHealthMilestones = false
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 60)) { timeline in
@@ -20,7 +21,7 @@ struct HomeView: View {
                             Text("已戒烟").foregroundStyle(.secondary)
                             Text(metrics.elapsedText).font(.system(.largeTitle, design: .rounded, weight: .bold)).contentTransition(.numericText())
                             Text(profile.quitDate, format: .dateTime.year().month().day().hour().minute()).font(.caption).foregroundStyle(.secondary)
-                            Label("连续无复吸 (metrics.relapseFreeText)", systemImage: "flame.fill")
+                            Label("连续无复吸 \(metrics.relapseFreeText)", systemImage: "flame.fill")
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(.orange)
                         }
@@ -45,7 +46,7 @@ struct HomeView: View {
                                 Label("高风险提示", systemImage: "exclamationmark.shield.fill")
                                     .font(.headline)
                                     .foregroundStyle(.orange)
-                                Text("你在 (insight.timeText) 前后更容易想抽烟")
+                                Text("你在 \(insight.timeText) 前后更容易想抽烟")
                                     .font(.title3.bold())
                                 Text("常见诱因：(insight.trigger)。提前准备一杯水或走动两分钟。")
                                     .foregroundStyle(.secondary)
@@ -57,14 +58,26 @@ struct HomeView: View {
                             .padding()
                             .liquidGlassCard(tint: .orange.opacity(0.12), cornerRadius: 18)
                         }
-                        VStack(alignment: .leading, spacing: 10) {
-                            Label("健康里程碑", systemImage: metrics.milestone.symbol).font(.headline)
-                            Text(metrics.milestone.title).font(.title3.bold())
-                            Text(metrics.milestone.detail).foregroundStyle(.secondary)
+                        Button { showsHealthMilestones = true } label: {
+                            VStack(alignment: .leading, spacing: 10) {
+                                HStack {
+                                    Label("健康里程碑", systemImage: metrics.milestone.symbol).font(.headline)
+                                    Spacer()
+                                    Image(systemName: "chevron.right").font(.caption.weight(.bold)).foregroundStyle(.tertiary)
+                                }
+                                Text(metrics.milestone.title).font(.title3.bold())
+                                Text(metrics.milestone.benefit).foregroundStyle(.secondary)
+                                if let next = metrics.nextHealthMilestone {
+                                    Text("下一阶段：\(next.title) · \(next.remainingText)")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(next.tint)
+                                }
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding()
+                            .liquidGlassCard(tint: .green.opacity(0.12), cornerRadius: 18)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding()
-                        .liquidGlassCard(tint: .green.opacity(0.12), cornerRadius: 18)
+                        .buttonStyle(.plain)
 
                         AchievementPreview(metrics: metrics) {
                             showsAchievements = true
@@ -81,6 +94,9 @@ struct HomeView: View {
         .sheet(isPresented: $showsSettings) { NavigationStack { SettingsView() } }
         .sheet(isPresented: $showsAchievements) {
             NavigationStack { AchievementsView(metrics: QuitMetrics(profile: profiles.first!, records: records, now: .now)) }
+        }
+        .sheet(isPresented: $showsHealthMilestones) {
+            NavigationStack { HealthMilestonesView(metrics: QuitMetrics(profile: profiles.first!, records: records, now: .now)) }
         }
     }
 }

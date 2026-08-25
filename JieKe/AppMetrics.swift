@@ -36,15 +36,18 @@ struct QuitMetrics {
         return days > 0 ? "\(days) 天 \(hours) 小时" : "\(hours) 小时"
     }
 
-    var milestone: (title: String, detail: String, symbol: String) {
-        let hours = max(0, now.timeIntervalSince(profile.quitDate) / 3_600)
-        switch hours {
-        case 0..<8: return ("现在开始恢复", "身体正在清除一氧化碳。", "lungs.fill")
-        case 8..<24: return ("血氧正在改善", "约 8 小时后，血液中的一氧化碳水平下降。", "drop.fill")
-        case 24..<48: return ("恭喜坚持一天", "心率和血压已开始回落。", "heart.fill")
-        case 48..<72: return ("呼吸会更轻松", "约 48 小时后，嗅觉和味觉开始恢复。", "nose.fill")
-        default: return ("继续积累健康", "每一次拒绝，都是身体恢复的一步。", "figure.walk")
+    var healthMilestones: [HealthMilestone] {
+        HealthMilestone.all.map { milestone in
+            milestone.updatingStatus(elapsed: max(0, now.timeIntervalSince(profile.quitDate)))
         }
+    }
+
+    var milestone: HealthMilestone {
+        healthMilestones.last(where: { $0.isCompleted }) ?? healthMilestones[0]
+    }
+
+    var nextHealthMilestone: HealthMilestone? {
+        healthMilestones.first(where: { !$0.isCompleted })
     }
 
     var achievements: [QuitAchievement] {
@@ -62,6 +65,44 @@ struct QuitMetrics {
 
     var nextAchievement: QuitAchievement? {
         achievements.first(where: { !$0.isUnlocked })
+    }
+}
+
+struct HealthMilestone: Identifiable {
+    let id: String
+    let title: String
+    let benefit: String
+    let symbol: String
+    let tint: Color
+    let targetInterval: TimeInterval
+    var isCompleted = false
+    var remainingInterval: TimeInterval = 0
+
+    static let all: [HealthMilestone] = [
+        HealthMilestone(id: "start", title: "开始恢复", benefit: "停止吸烟后，身体开始排出一氧化碳。", symbol: "lungs.fill", tint: .mint, targetInterval: 0),
+        HealthMilestone(id: "eightHours", title: "8 小时", benefit: "血液中一氧化碳水平下降，氧气运输逐步改善。", symbol: "drop.fill", tint: .blue, targetInterval: 8 * 3_600),
+        HealthMilestone(id: "oneDay", title: "24 小时", benefit: "心脏病发作风险开始下降，身体继续清除烟草残留。", symbol: "heart.fill", tint: .red, targetInterval: 24 * 3_600),
+        HealthMilestone(id: "twoDays", title: "48 小时", benefit: "嗅觉和味觉可能开始恢复，神经末梢逐步再生。", symbol: "nose.fill", tint: .purple, targetInterval: 48 * 3_600),
+        HealthMilestone(id: "threeDays", title: "72 小时", benefit: "支气管开始放松，呼吸可能感觉更轻松。", symbol: "wind", tint: .teal, targetInterval: 72 * 3_600),
+        HealthMilestone(id: "oneWeek", title: "1 周", benefit: "循环和肺部功能持续改善，日常活动可能更轻松。", symbol: "figure.walk", tint: .green, targetInterval: 7 * 86_400),
+        HealthMilestone(id: "oneMonth", title: "1 个月", benefit: "咳嗽和气短可能减少，肺部纤毛逐步恢复清洁功能。", symbol: "lungs.fill", tint: .cyan, targetInterval: 30 * 86_400),
+        HealthMilestone(id: "threeMonths", title: "3 个月", benefit: "血液循环和肺功能可继续提升，运动耐受度通常更好。", symbol: "figure.run", tint: .orange, targetInterval: 90 * 86_400),
+        HealthMilestone(id: "oneYear", title: "1 年", benefit: "冠心病风险可显著下降；长期收益仍会继续累积。", symbol: "heart.circle.fill", tint: .pink, targetInterval: 365 * 86_400)
+    ]
+
+    func updatingStatus(elapsed: TimeInterval) -> HealthMilestone {
+        var copy = self
+        copy.isCompleted = elapsed >= targetInterval
+        copy.remainingInterval = max(0, targetInterval - elapsed)
+        return copy
+    }
+
+    var remainingText: String {
+        let hours = Int(ceil(remainingInterval / 3_600))
+        if hours <= 0 { return "已完成" }
+        if hours < 24 { return "还需 \(hours) 小时" }
+        let days = Int(ceil(Double(hours) / 24))
+        return "还需 \(days) 天"
     }
 }
 
