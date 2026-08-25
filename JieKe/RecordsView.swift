@@ -6,6 +6,8 @@ struct RecordsView: View {
     @Query(sort: \CravingRecord.createdAt, order: .reverse) private var records: [CravingRecord]
     @State private var showsEditor = false
     @State private var selectedRecord: CravingRecord?
+    @State private var filter: RecordFilter = .all
+    @State private var searchText = ""
     var body: some View {
         ZStack {
             LiquidGlassBackdrop()
@@ -15,7 +17,13 @@ struct RecordsView: View {
                         .foregroundStyle(.white)
                 } else {
                     List {
-                        ForEach(records) { record in
+                        Section {
+                            Picker("显示", selection: $filter) {
+                                ForEach(RecordFilter.allCases) { Text($0.title).tag($0) }
+                            }
+                            .pickerStyle(.segmented)
+                        }
+                        ForEach(filteredRecords) { record in
                             RecordRow(record: record)
                                 .listRowBackground(Color.clear)
                                 .contentShape(Rectangle())
@@ -31,9 +39,39 @@ struct RecordsView: View {
                 }
             }
         }.navigationTitle("记录")
+            .searchable(text: $searchText, prompt: "搜索诱因、心情或备注")
             .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("添加记录", systemImage: "plus") { showsEditor = true } } }
             .sheet(isPresented: $showsEditor) { NavigationStack { RecordEditorView() } }
             .sheet(item: $selectedRecord) { record in NavigationStack { RecordEditorView(record: record) } }
+    }
+
+    private var filteredRecords: [CravingRecord] {
+        records.filter { record in
+            let matchesFilter: Bool
+            switch filter {
+            case .all: matchesFilter = true
+            case .success: matchesFilter = !record.didSmoke
+            case .relapse: matchesFilter = record.didSmoke
+            }
+            guard matchesFilter else { return false }
+            let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !query.isEmpty else { return true }
+            return [record.trigger, record.mood, record.note, record.copingMethod]
+                .joined(separator: " ")
+                .localizedCaseInsensitiveContains(query)
+        }
+    }
+}
+
+private enum RecordFilter: CaseIterable, Identifiable {
+    case all, success, relapse
+    var id: Self { self }
+    var title: String {
+        switch self {
+        case .all: "全部"
+        case .success: "忍住"
+        case .relapse: "复吸"
+        }
     }
 }
 
