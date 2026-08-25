@@ -70,3 +70,21 @@ struct PeriodSummary {
     var spentMoney: Double { guard profile.cigarettesPerPack > 0 else { return 0 }; return Double(smokedCigarettes) / Double(profile.cigarettesPerPack) * profile.packPrice }
     var tarMilligrams: Double { Double(smokedCigarettes) * profile.tarMilligramsPerCigarette }
 }
+
+struct RiskInsight {
+    let hour: Int
+    let count: Int
+    let trigger: String
+
+    static func from(records: [CravingRecord], calendar: Calendar = .current) -> RiskInsight? {
+        let riskRecords = records.filter { $0.didSmoke || $0.intensity >= 7 }
+        guard riskRecords.count >= 2 else { return nil }
+        let grouped = Dictionary(grouping: riskRecords, by: { calendar.component(.hour, from: $0.createdAt) })
+        guard let mostLikely = grouped.max(by: { $0.value.count < $1.value.count }) else { return nil }
+        let triggers = Dictionary(grouping: mostLikely.value.filter { !$0.trigger.isEmpty }, by: \.trigger)
+        let trigger = triggers.max(by: { $0.value.count < $1.value.count })?.key ?? "这个时段"
+        return RiskInsight(hour: mostLikely.key, count: mostLikely.value.count, trigger: trigger)
+    }
+
+    var timeText: String { String(format: "%02d:00", hour) }
+}

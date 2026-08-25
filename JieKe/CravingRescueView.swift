@@ -11,6 +11,7 @@ struct CravingRescueView: View {
     @State private var isExpanded = false
     @State private var showsRelapseSheet = false
     @State private var cigaretteCount = 1
+    @State private var recoveryPlan = ""
     @State private var mood = RecordChoices.moods[0]
     @State private var trigger = RecordChoices.triggers[0]
     private let duration = 180.0
@@ -51,6 +52,12 @@ struct CravingRescueView: View {
                     Section("这次抽了多少？") {
                         Stepper("\(cigaretteCount) 根", value: $cigaretteCount, in: 1...20)
                     }
+                    Section("下一次怎么准备？") {
+                        TextField("例如：饭后先散步 5 分钟", text: $recoveryPlan, axis: .vertical)
+                        Text("一次复吸不代表前面的坚持白费。写下一个下一次能做到的小动作。")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                     Section {
                         Text("如实记录不是失败。了解复吸发生的时刻，才能更好地准备下一次。")
                             .font(.footnote)
@@ -68,7 +75,7 @@ struct CravingRescueView: View {
     }
     private func saveSuccess() { modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: trigger, mood: mood)); dismiss() }
     private func saveRelapse() {
-        modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: trigger, mood: mood, didSmoke: true, cigaretteCount: cigaretteCount))
+        modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: trigger, mood: mood, note: recoveryPlan, didSmoke: true, cigaretteCount: cigaretteCount))
         dismiss()
     }
 }

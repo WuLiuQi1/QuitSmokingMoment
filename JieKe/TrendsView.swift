@@ -65,6 +65,10 @@ struct TrendsView: View {
                         .foregroundStyle(.secondary)
                 }
 
+                Section("戒烟日历") {
+                    QuitCalendarView(records: records)
+                }
+
                 Section("常见诱因") {
                     if triggerSummary.isEmpty { Text("多记录几次后，这里会显示你的高风险诱因。").foregroundStyle(.secondary) }
                     ForEach(triggerSummary) { item in LabeledContent(item.name, value: "\(item.count) 次") }

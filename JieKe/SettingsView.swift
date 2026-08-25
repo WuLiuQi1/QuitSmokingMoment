@@ -4,9 +4,11 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Query private var profiles: [QuitProfile]
+    @Query private var records: [CravingRecord]
     @AppStorage("notificationsEnabled") private var notificationsEnabled = false
     @AppStorage("reminderHour") private var reminderHour = 20
     @AppStorage("reminderMinute") private var reminderMinute = 0
+    @AppStorage("highRiskReminderEnabled") private var highRiskReminderEnabled = false
     @State private var reminderTime = Calendar.current.date(from: DateComponents(hour: 20, minute: 0)) ?? .now
     @State private var notificationError = false
     var body: some View {
@@ -15,6 +17,16 @@ struct SettingsView: View {
             Section("提醒") {
                 Toggle("每日戒烟提醒", isOn: $notificationsEnabled)
                 if notificationsEnabled { DatePicker("提醒时间", selection: $reminderTime, displayedComponents: .hourAndMinute) }
+                if let insight = RiskInsight.from(records: records) {
+                    Toggle("高风险时段提醒", isOn: $highRiskReminderEnabled)
+                    Text("根据记录推测，你在 (insight.timeText) 前后较易想抽烟；会提前发送提醒。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("累积至少 2 次高强度烟瘾或复吸记录后，可开启高风险时段提醒。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 Text("提醒会在这台设备上本地发送。").font(.caption).foregroundStyle(.secondary)
             }
             Section("健康与数据") { Label("HealthKit（即将推出）", systemImage: "heart.text.square"); Label("小组件（即将推出）", systemImage: "rectangle.3.group"); Label("数据导出（即将推出）", systemImage: "square.and.arrow.up") }
@@ -38,6 +50,18 @@ struct SettingsView: View {
         .onChange(of: reminderTime) { _, _ in
             guard notificationsEnabled else { return }
             Task { await saveReminder() }
+        }
+        .onChange(of: highRiskReminderEnabled) { _, enabled in
+            Task {
+                guard enabled else { NotificationManager.cancelRiskReminder(); return }
+                let allowed = await NotificationManager.requestAuthorization()
+                guard allowed, let insight = RiskInsight.from(records: records) else {
+                    highRiskReminderEnabled = false
+                    notificationError = true
+                    return
+                }
+                await NotificationManager.scheduleRiskReminder(for: insight)
+            }
         }
         .alert("未获得通知权限", isPresented: $notificationError) {
             Button("好", role: .cancel) { }
