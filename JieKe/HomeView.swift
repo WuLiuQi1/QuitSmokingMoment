@@ -4,11 +4,13 @@ import SwiftUI
 struct HomeView: View {
     @Query private var profiles: [QuitProfile]
     @Query(sort: \CravingRecord.createdAt, order: .reverse) private var records: [CravingRecord]
+    @Query(sort: \DailyReflection.createdAt, order: .reverse) private var reflections: [DailyReflection]
     @State private var showsRescue = false
     @State private var showsSettings = false
     @State private var showsAchievements = false
     @State private var showsHealthMilestones = false
     @State private var showsDailyPlan = false
+    @State private var showsDailyReflection = false
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 60)) { timeline in
@@ -44,6 +46,13 @@ struct HomeView: View {
                             .controlSize(.large)
                         DailyPlanCard(successCount: records.filter { !$0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count) {
                             showsDailyPlan = true
+                        }
+                        DailyReflectionCard(
+                            successCount: records.filter { !$0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count,
+                            relapseCount: records.filter { $0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count,
+                            reflection: reflections.first(where: { Calendar.current.isDateInToday($0.createdAt) })
+                        ) {
+                            showsDailyReflection = true
                         }
                         if let insight = RiskInsight.from(records: records) {
                             VStack(alignment: .leading, spacing: 10) {
@@ -104,6 +113,9 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showsDailyPlan) {
             NavigationStack { DailyPlanView(successCount: records.filter { !$0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count) }
+        }
+        .sheet(isPresented: $showsDailyReflection) {
+            NavigationStack { DailyReflectionView(reflection: reflections.first(where: { Calendar.current.isDateInToday($0.createdAt) }), successCount: records.filter { !$0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count, relapseCount: records.filter { $0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count) }
         }
     }
 }

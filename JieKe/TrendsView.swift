@@ -115,6 +115,23 @@ struct TrendsView: View {
                         .padding(.vertical, 4)
                     }
                 }
+
+                Section("复吸分析") {
+                    if let insight = RiskInsight.from(records: records) {
+                        Label("高风险时段：\(insight.timeText)", systemImage: "clock.badge.exclamationmark")
+                            .foregroundStyle(.orange)
+                        Text("常见诱因是“\(insight.trigger)”。建议在这个时段前主动喝水、走动两分钟，或提前打开烟瘾急救。")
+                            .foregroundStyle(.secondary)
+                    }
+                    if let trigger = relapseTriggerSummary.first {
+                        Label("复吸最常见诱因：\(trigger.name)（\(trigger.count) 次）", systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.red)
+                    }
+                    if RiskInsight.from(records: records) == nil && relapseTriggerSummary.isEmpty {
+                        Text("累积更多记录后，会在这里显示你的复吸风险规律和提前准备建议。")
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
         }
         .scrollContentBackground(.hidden)
@@ -185,6 +202,12 @@ struct TrendsView: View {
 
     private var relapseRecords: [CravingRecord] {
         Array(records.filter(\.didSmoke).reversed())
+    }
+
+    private var relapseTriggerSummary: [TriggerSummary] {
+        Dictionary(grouping: records.filter { $0.didSmoke && !$0.trigger.isEmpty }, by: \.trigger)
+            .map { TriggerSummary(name: $0.key, count: $0.value.count) }
+            .sorted { $0.count > $1.count }
     }
 }
 

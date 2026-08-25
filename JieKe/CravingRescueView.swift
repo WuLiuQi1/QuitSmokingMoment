@@ -5,6 +5,8 @@ import SwiftUI
 struct CravingRescueView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Query private var records: [CravingRecord]
+    @AppStorage("achievementNotificationsEnabled") private var achievementNotificationsEnabled = false
     @State private var intensity = 5.0
     @State private var startedAt = Date()
     @State private var now = Date()
@@ -99,7 +101,22 @@ struct CravingRescueView: View {
             .presentationDetents([.medium])
         }
     }
-    private func saveSuccess() { modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: trigger, mood: mood, copingMethod: selectedAction?.title ?? "")); dismiss() }
+    private func saveSuccess() {
+        let nextCount = records.filter { !$0.didSmoke }.count + 1
+        modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: trigger, mood: mood, copingMethod: selectedAction?.title ?? ""))
+        if achievementNotificationsEnabled {
+            let message: (String, String)?
+            switch nextCount {
+            case 1: message = ("解锁成就", "你成功度过了第一次烟瘾，继续保持。")
+            case 10: message = ("解锁成就", "已成功忍住 10 次，每一次都很重要。")
+            default: message = nil
+            }
+            if let message {
+                Task { await NotificationManager.scheduleAchievement(title: message.0, body: message.1, identifier: "achievement-\(nextCount)") }
+            }
+        }
+        dismiss()
+    }
     private func saveRelapse() {
         modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: trigger, mood: mood, note: recoveryPlan, copingMethod: selectedAction?.title ?? "", didSmoke: true, cigaretteCount: cigaretteCount))
         dismiss()

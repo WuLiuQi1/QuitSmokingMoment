@@ -44,3 +44,16 @@ final class CravingRecord {
         self.cigaretteCount = cigaretteCount
     }
 }
+
+@Model
+final class DailyReflection {
+    var createdAt: Date
+    var mood: String
+    var note: String
+
+    init(createdAt: Date = .now, mood: String = "平静", note: String = "") {
+        self.createdAt = createdAt
+        self.mood = mood
+        self.note = note
+    }
+}

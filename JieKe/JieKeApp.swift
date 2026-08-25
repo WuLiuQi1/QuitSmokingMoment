@@ -7,6 +7,6 @@ struct QuitSmokingMomentApp: App {
         WindowGroup {
             PrivacyProtectedView { RootView() }
         }
-        .modelContainer(for: [QuitProfile.self, CravingRecord.self])
+        .modelContainer(for: [QuitProfile.self, CravingRecord.self, DailyReflection.self])
     }
 }

@@ -10,6 +10,8 @@ struct SettingsView: View {
     @AppStorage("reminderHour") private var reminderHour = 20
     @AppStorage("reminderMinute") private var reminderMinute = 0
     @AppStorage("highRiskReminderEnabled") private var highRiskReminderEnabled = false
+    @AppStorage("achievementNotificationsEnabled") private var achievementNotificationsEnabled = false
+    @AppStorage("healthMilestoneNotificationsEnabled") private var healthMilestoneNotificationsEnabled = false
     @AppStorage("privacyLockEnabled") private var privacyLockEnabled = false
     @State private var reminderTime = Calendar.current.date(from: DateComponents(hour: 20, minute: 0)) ?? .now
     @State private var notificationError = false
@@ -24,7 +26,7 @@ struct SettingsView: View {
                 if notificationsEnabled { DatePicker("提醒时间", selection: $reminderTime, displayedComponents: .hourAndMinute) }
                 if let insight = RiskInsight.from(records: records) {
                     Toggle("高风险时段提醒", isOn: $highRiskReminderEnabled)
-                    Text("根据记录推测，你在 (insight.timeText) 前后较易想抽烟；会提前发送提醒。")
+                    Text("根据记录推测，你在 \(insight.timeText) 前后较易想抽烟；会提前发送提醒。")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else {
@@ -33,6 +35,13 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 }
                 Text("提醒会在这台设备上本地发送。").font(.caption).foregroundStyle(.secondary)
+            }
+            Section("阶段提醒") {
+                Toggle("成就解锁提醒", isOn: $achievementNotificationsEnabled)
+                Toggle("健康里程碑提醒", isOn: $healthMilestoneNotificationsEnabled)
+                Text("成就和健康阶段达到时，会在本机显示提醒。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
             Section("健康与数据") {
                 Label("HealthKit（即将推出）", systemImage: "heart.text.square")
@@ -75,6 +84,25 @@ struct SettingsView: View {
                     return
                 }
                 await NotificationManager.scheduleRiskReminder(for: insight)
+            }
+        }
+        .onChange(of: achievementNotificationsEnabled) { _, enabled in
+            Task {
+                guard enabled else { return }
+                let allowed = await NotificationManager.requestAuthorization()
+                if !allowed { achievementNotificationsEnabled = false; notificationError = true }
+            }
+        }
+        .onChange(of: healthMilestoneNotificationsEnabled) { _, enabled in
+            Task {
+                guard enabled else { NotificationManager.cancelHealthMilestoneReminder(); return }
+                let allowed = await NotificationManager.requestAuthorization()
+                guard allowed, let profile = profiles.first else {
+                    healthMilestoneNotificationsEnabled = false
+                    notificationError = true
+                    return
+                }
+                await NotificationManager.scheduleNextHealthMilestone(after: profile.quitDate)
             }
         }
         .alert("未获得通知权限", isPresented: $notificationError) {
