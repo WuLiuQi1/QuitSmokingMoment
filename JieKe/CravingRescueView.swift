@@ -14,6 +14,8 @@ struct CravingRescueView: View {
     @State private var recoveryPlan = ""
     @State private var mood = RecordChoices.moods[0]
     @State private var trigger = RecordChoices.triggers[0]
+    @State private var selectedAction: RescueAction?
+    @State private var completedAction = false
     private let duration = 180.0
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     private var remaining: Int { max(0, Int(duration - now.timeIntervalSince(startedAt))) }
@@ -33,12 +35,36 @@ struct CravingRescueView: View {
             VStack(alignment: .leading) { Text("当前强度：\(Int(intensity)) / 10"); Slider(value: $intensity, in: 1...10, step: 1) }
                 .padding()
                 .liquidGlassCard(cornerRadius: 18)
-            HStack { RescueTip(title: "喝水", symbol: "drop.fill"); Spacer(); RescueTip(title: "走动", symbol: "figure.walk"); Spacer(); RescueTip(title: "转移注意", symbol: "sparkles") }
+            HStack(spacing: 4) {
+                ForEach(RescueAction.allCases) { action in
+                    Button {
+                        selectedAction = action
+                        completedAction = false
+                    } label: {
+                        RescueTip(action: action, isSelected: selectedAction == action)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
                 .padding()
                 .liquidGlassCard(cornerRadius: 18)
             HStack(spacing: 12) {
                 RescueChoice(title: "诱因", selection: $trigger, options: RecordChoices.triggers)
                 RescueChoice(title: "心情", selection: $mood, options: RecordChoices.moods)
+            }
+            if let action = selectedAction {
+                VStack(alignment: .leading, spacing: 10) {
+                    Label(action.title, systemImage: action.symbol).font(.headline)
+                    Text(action.instruction).foregroundStyle(.secondary)
+                    Button(completedAction ? "已完成" : "完成这个小动作") {
+                        completedAction = true
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(completedAction ? .green : .blue)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .liquidGlassCard(tint: completedAction ? .green.opacity(0.14) : nil, cornerRadius: 18)
             }
             Button("我坚持过去了") { saveSuccess() }.buttonStyle(.borderedProminent).controlSize(.large).frame(maxWidth: .infinity)
             Button("我没忍住", role: .destructive) { showsRelapseSheet = true }
@@ -73,14 +99,56 @@ struct CravingRescueView: View {
             .presentationDetents([.medium])
         }
     }
-    private func saveSuccess() { modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: trigger, mood: mood)); dismiss() }
+    private func saveSuccess() { modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: trigger, mood: mood, copingMethod: selectedAction?.title ?? "")); dismiss() }
     private func saveRelapse() {
-        modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: trigger, mood: mood, note: recoveryPlan, didSmoke: true, cigaretteCount: cigaretteCount))
+        modelContext.insert(CravingRecord(intensity: Int(intensity), trigger: trigger, mood: mood, note: recoveryPlan, copingMethod: selectedAction?.title ?? "", didSmoke: true, cigaretteCount: cigaretteCount))
         dismiss()
     }
 }
 
-private struct RescueTip: View { let title: String; let symbol: String; var body: some View { Label(title, systemImage: symbol).font(.subheadline) } }
+private enum RescueAction: String, CaseIterable, Identifiable {
+    case water, walk, distract
+
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .water: return "喝水"
+        case .walk: return "走动"
+        case .distract: return "转移注意"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .water: return "drop.fill"
+        case .walk: return "figure.walk"
+        case .distract: return "sparkles"
+        }
+    }
+    var instruction: String {
+        switch self {
+        case .water: "慢慢喝完一杯水，给身体一点新的感觉。"
+        case .walk: "离开当前位置，走动两分钟，哪怕只是在房间里。"
+        case .distract: "做一件需要双手或注意力的小事，直到下一次呼吸结束。"
+        }
+    }
+}
+
+private struct RescueTip: View {
+    let action: RescueAction
+    let isSelected: Bool
+
+    var body: some View {
+        VStack(spacing: 5) {
+            Image(systemName: action.symbol)
+            Text(action.title).font(.caption.weight(.semibold))
+        }
+        .foregroundStyle(isSelected ? Color.accentColor : Color.primary)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
+        .background(isSelected ? Color.accentColor.opacity(0.12) : .clear, in: RoundedRectangle(cornerRadius: 10))
+    }
+}
 
 private struct RescueChoice: View {
     let title: String

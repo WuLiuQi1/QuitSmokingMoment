@@ -29,15 +29,17 @@ final class CravingRecord {
     var trigger: String
     var mood: String
     var note: String
+    var copingMethod: String
     var didSmoke: Bool
     var cigaretteCount: Int
 
-    init(createdAt: Date = .now, intensity: Int, trigger: String = "", mood: String = "平静", note: String = "", didSmoke: Bool = false, cigaretteCount: Int = 0) {
+    init(createdAt: Date = .now, intensity: Int, trigger: String = "", mood: String = "平静", note: String = "", copingMethod: String = "", didSmoke: Bool = false, cigaretteCount: Int = 0) {
         self.createdAt = createdAt
         self.intensity = intensity
         self.trigger = trigger
         self.mood = mood
         self.note = note
+        self.copingMethod = copingMethod
         self.didSmoke = didSmoke
         self.cigaretteCount = cigaretteCount
     }
