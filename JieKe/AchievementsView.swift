@@ -57,9 +57,15 @@ private struct AchievementBadge: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
-            Text(achievement.isUnlocked ? "已解锁" : "未解锁")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(achievement.isUnlocked ? achievement.tint : .tertiary)
+            if achievement.isUnlocked {
+                Text("已解锁")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(achievement.tint)
+            } else {
+                Text("未解锁")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
         }
         .frame(maxWidth: .infinity, minHeight: 175, alignment: .leading)
         .padding()
