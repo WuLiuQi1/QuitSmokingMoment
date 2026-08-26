@@ -17,6 +17,7 @@ struct CravingRescueView: View {
     @State private var now = Date()
     @State private var isExpanded = false
     @State private var showsRelapseSheet = false
+    @State private var showsFocusGame = false
     @State private var cigaretteCount = 1
     @State private var recoveryPlan = ""
     @State private var mood = RecordChoices.moods[0]
@@ -55,6 +56,16 @@ struct CravingRescueView: View {
             }
                 .padding()
                 .liquidGlassCard(cornerRadius: 18)
+            Button {
+                showsFocusGame = true
+            } label: {
+                Label("玩 2 分钟专注小游戏", systemImage: "gamecontroller.fill")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+            }
+            .buttonStyle(.bordered)
+            .tint(.indigo)
             HStack(spacing: 12) {
                 RescueChoice(title: "诱因", selection: $trigger, options: RecordChoices.triggers)
                 RescueChoice(title: "心情", selection: $mood, options: RecordChoices.moods)
@@ -104,6 +115,15 @@ struct CravingRescueView: View {
                 }
             }
             .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $showsFocusGame) {
+            NavigationStack {
+                FocusGameView {
+                    selectedAction = .distract
+                    completedAction = true
+                    showsFocusGame = false
+                }
+            }
         }
     }
     private func saveSuccess() {
