@@ -2,20 +2,17 @@ import SwiftUI
 
 struct QuitCalendarView: View {
     let records: [CravingRecord]
+    let snapshot: QuitCalendarSnapshot
     private let calendar = Calendar.current
     private let weekdays = ["日", "一", "二", "三", "四", "五", "六"]
     @State private var selectedDay: CalendarDaySelection?
 
     var body: some View {
-        let month = calendar.dateInterval(of: .month, for: .now)!
-        let days = calendar.range(of: .day, in: .month, for: .now)!
-        let leadingDays = calendar.component(.weekday, from: month.start) - 1
         let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
-        let dayStatuses = Dictionary(grouping: records.filter { month.contains($0.createdAt) }, by: { calendar.component(.day, from: $0.createdAt) })
 
         VStack(spacing: 10) {
             HStack {
-                Text(month.start, format: .dateTime.year().month())
+                Text(snapshot.monthStart, format: .dateTime.year().month())
                     .font(.headline)
                 Spacer()
                 Label("忍住", systemImage: "circle.fill").foregroundStyle(.green)
@@ -25,11 +22,10 @@ struct QuitCalendarView: View {
 
             LazyVGrid(columns: columns, spacing: 8) {
                 ForEach(weekdays, id: \.self) { Text($0).font(.caption2).foregroundStyle(.secondary) }
-                ForEach(0..<leadingDays, id: \.self) { _ in Color.clear.frame(height: 32) }
-                ForEach(Array(days), id: \.self) { day in
-                    let date = calendar.date(bySetting: .day, value: day, of: month.start)!
-                    CalendarDay(day: day, date: date, records: dayStatuses[day] ?? []) {
-                        selectedDay = CalendarDaySelection(date: date)
+                ForEach(0..<snapshot.leadingDays, id: \.self) { _ in Color.clear.frame(height: 32) }
+                ForEach(snapshot.days) { day in
+                    CalendarDay(day: day) {
+                        selectedDay = CalendarDaySelection(date: day.date)
                     }
                 }
             }
@@ -44,26 +40,63 @@ struct QuitCalendarView: View {
 }
 
 private struct CalendarDay: View {
-    let day: Int
-    let date: Date
-    let records: [CravingRecord]
+    let day: QuitCalendarDay
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             VStack(spacing: 3) {
-                Text("\(day)").font(.caption)
+                Text("\(day.day)").font(.caption)
                 HStack(spacing: 3) {
-                    if records.contains(where: { !$0.didSmoke }) { Circle().fill(.green).frame(width: 5, height: 5) }
-                    if records.contains(where: \.didSmoke) { Circle().fill(.red).frame(width: 5, height: 5) }
+                    if day.hasSuccess { Circle().fill(.green).frame(width: 5, height: 5) }
+                    if day.hasRelapse { Circle().fill(.red).frame(width: 5, height: 5) }
                 }
                 .frame(height: 5)
             }
             .frame(maxWidth: .infinity, minHeight: 32)
-            .background(Calendar.current.isDateInToday(date) ? Color.accentColor.opacity(0.12) : .clear, in: RoundedRectangle(cornerRadius: 8))
+            .background(Calendar.current.isDateInToday(day.date) ? Color.accentColor.opacity(0.12) : .clear, in: RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
     }
+}
+
+struct QuitCalendarRecordState: Sendable {
+    let createdAt: Date
+    let didSmoke: Bool
+}
+
+struct QuitCalendarSnapshot {
+    let monthStart: Date
+    let leadingDays: Int
+    let days: [QuitCalendarDay]
+
+    init(records: [QuitCalendarRecordState], now: Date = .now, calendar: Calendar = .current) {
+        let month = calendar.dateInterval(of: .month, for: now)!
+        monthStart = month.start
+        leadingDays = calendar.component(.weekday, from: month.start) - 1
+        let recordsByDay = Dictionary(grouping: records.filter { $0.createdAt >= month.start && $0.createdAt < month.end }) {
+            calendar.component(.day, from: $0.createdAt)
+        }
+        let range = calendar.range(of: .day, in: .month, for: now)!
+        days = range.compactMap { value in
+            guard let date = calendar.date(bySetting: .day, value: value, of: month.start) else { return nil }
+            let dayRecords = recordsByDay[value] ?? []
+            return QuitCalendarDay(
+                day: value,
+                date: date,
+                hasSuccess: dayRecords.contains { !$0.didSmoke },
+                hasRelapse: dayRecords.contains { $0.didSmoke }
+            )
+        }
+    }
+}
+
+struct QuitCalendarDay: Identifiable {
+    let day: Int
+    let date: Date
+    let hasSuccess: Bool
+    let hasRelapse: Bool
+    var id: Int { day }
 }
 
 private struct CalendarDaySelection: Identifiable {
