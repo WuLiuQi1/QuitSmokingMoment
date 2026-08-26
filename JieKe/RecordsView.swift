@@ -28,16 +28,22 @@ struct RecordsView: View {
                         ForEach(filteredRecords) { record in
                             RecordRow(record: record)
                                 .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 4, leading: 20, bottom: 4, trailing: 20))
                                 .contentShape(Rectangle())
                                 .onTapGesture { selectedRecord = record }
-                                .swipeActions {
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button(role: .destructive) { modelContext.delete(record) } label: {
-                                        Label("删除", systemImage: "trash")
+                                        Image(systemName: "trash")
                                     }
                                 }
                         }
                     }
                     .scrollContentBackground(.hidden)
+                    .listStyle(.plain)
+                    .listRowSpacing(8)
+                    .listSectionSpacing(10)
+                    .safeAreaPadding(.bottom, 82)
                 }
             }
         }.navigationTitle("记录")
@@ -81,11 +87,16 @@ private struct RecordRow: View {
     let record: CravingRecord
     @State private var audioPlayer: AVAudioPlayer?
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: record.didSmoke ? "exclamationmark.triangle.fill" : "checkmark.circle.fill").foregroundStyle(record.didSmoke ? .orange : .green)
-            VStack(alignment: .leading, spacing: 4) {
+        HStack(spacing: 10) {
+            Image(systemName: record.didSmoke ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+                .foregroundStyle(record.didSmoke ? .orange : .green)
+                .font(.title3)
+            VStack(alignment: .leading, spacing: 2) {
                 Text(record.didSmoke ? "已抽烟 \(record.cigaretteCount) 根" : "成功忍住了")
-                Text("强度 \(record.intensity) · \(record.mood)\(record.trigger.isEmpty ? "" : " · \(record.trigger)")").font(.caption).foregroundStyle(.secondary)
+                    .font(.body.weight(.semibold))
+                Text("强度 \(record.intensity) · \(record.mood)\(record.trigger.isEmpty ? "" : " · \(record.trigger)")")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 if record.attachmentImageData != nil || record.voiceMemoData != nil {
                     Label("含附件", systemImage: record.voiceMemoData != nil ? "photo.on.rectangle.angled" : "photo")
                         .font(.caption)
@@ -102,11 +113,16 @@ private struct RecordRow: View {
                     .buttonStyle(.borderless)
                 }
             }
-            Spacer(); Text(record.createdAt, format: .dateTime.month().day().hour().minute()).font(.caption).foregroundStyle(.secondary)
+            Spacer(minLength: 8)
+            Text(record.createdAt, format: .dateTime.month().day().hour().minute())
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .monospacedDigit()
         }
-        .padding(.vertical, 4)
-        .padding(.horizontal, 8)
-        .liquidGlassCard(cornerRadius: 18)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .liquidGlassCard(cornerRadius: 16)
     }
 }
 
