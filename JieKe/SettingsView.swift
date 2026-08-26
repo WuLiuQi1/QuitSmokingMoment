@@ -67,6 +67,7 @@ struct SettingsView: View {
             }
             Section("健康与数据") {
                 NavigationLink { HealthDashboardView() } label: { Label("HealthKit", systemImage: "heart.text.square") }
+                NavigationLink { QuitSmokingEducationView() } label: { Label("戒烟科普", systemImage: "book.closed.fill") }
                 Label("小组件", systemImage: "rectangle.3.group")
                 Toggle("显示戒烟实时活动", isOn: liveActivityBinding)
                 Button { exportRecords() } label: { Label("导出记录 CSV", systemImage: "square.and.arrow.up") }

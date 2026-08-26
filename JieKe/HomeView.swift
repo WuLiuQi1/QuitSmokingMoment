@@ -11,6 +11,7 @@ struct HomeView: View {
     @State private var showsHealthMilestones = false
     @State private var showsDailyPlan = false
     @State private var showsDailyReflection = false
+    @State private var showsEducation = false
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 60)) { timeline in
@@ -54,6 +55,28 @@ struct HomeView: View {
                         ) {
                             showsDailyReflection = true
                         }
+                        Button { showsEducation = true } label: {
+                            HStack(spacing: 14) {
+                                Image(systemName: "book.closed.fill")
+                                    .font(.title3)
+                                    .foregroundStyle(.teal)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("戒烟科普")
+                                        .font(.headline)
+                                    Text("了解危害、发现诱因，学习科学戒烟。")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(.tertiary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding()
+                            .liquidGlassCard(tint: .teal.opacity(0.10), cornerRadius: 18)
+                        }
+                        .buttonStyle(.plain)
                         if let insight = RiskInsight.from(records: records) {
                             VStack(alignment: .leading, spacing: 10) {
                                 Label("高风险提示", systemImage: "exclamationmark.shield.fill")
@@ -125,6 +148,7 @@ struct HomeView: View {
         .sheet(isPresented: $showsDailyReflection) {
             NavigationStack { DailyReflectionView(reflection: reflections.first(where: { Calendar.current.isDateInToday($0.createdAt) }), successCount: records.filter { !$0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count, relapseCount: records.filter { $0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count) }
         }
+        .sheet(isPresented: $showsEducation) { NavigationStack { QuitSmokingEducationView() } }
     }
 
     private func publishSystemSurfaces(profile: QuitProfile) {
