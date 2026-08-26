@@ -29,19 +29,40 @@ struct CravingRescueView: View {
     private var remaining: Int { max(0, Int(duration - now.timeIntervalSince(startedAt))) }
 
     var body: some View {
-        ScrollView {
-        VStack(spacing: 26) {
-            Text("给自己 3 分钟").font(.title2.bold())
+        VStack(spacing: 12) {
             ZStack {
-                Circle().fill(.blue.opacity(0.12)).frame(width: 190, height: 190)
-                Circle().fill(.blue.opacity(0.2)).frame(width: isExpanded ? 150 : 105, height: isExpanded ? 150 : 105).animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: isExpanded)
-                VStack { Text("慢慢呼吸").font(.headline); Text("\(remaining / 60):\(String(format: "%02d", remaining % 60))").font(.system(.title, design: .rounded, weight: .bold)) }
+                Ellipse()
+                    .fill(.blue.opacity(0.12))
+                    .frame(width: 238, height: 188)
+                    .rotationEffect(.degrees(-12))
+                    .blur(radius: 2)
+                Circle()
+                    .fill(.cyan.opacity(0.14))
+                    .frame(width: 202, height: 202)
+                    .offset(x: -10, y: 5)
+                Circle()
+                    .fill(.blue.opacity(0.24))
+                    .frame(width: isExpanded ? 164 : 112, height: isExpanded ? 164 : 112)
+                    .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: isExpanded)
+                Circle()
+                    .stroke(.white.opacity(0.55), lineWidth: 1)
+                    .frame(width: 202, height: 202)
+                VStack(spacing: 5) {
+                    Text("给自己 3 分钟").font(.title3.bold())
+                    Text("慢慢呼吸").font(.subheadline.bold())
+                    Text("\(remaining / 60):\(String(format: "%02d", remaining % 60))")
+                        .font(.system(.title, design: .rounded, weight: .bold))
+                }
             }
             .onAppear { isExpanded = true }
-            .liquidGlassCard(tint: .blue.opacity(0.35), cornerRadius: 95)
-            Text("吸气 4 秒，停住 2 秒，呼气 6 秒。烟瘾会像浪一样退去。").multilineTextAlignment(.center).foregroundStyle(.secondary)
-            VStack(alignment: .leading) { Text("当前强度：\(Int(intensity)) / 10"); Slider(value: $intensity, in: 1...10, step: 1) }
-                .padding()
+            .frame(height: 218)
+            Text("吸气 4 秒，停住 2 秒，呼气 6 秒。烟瘾会像浪一样退去。")
+                .font(.caption)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 6) { Text("当前强度：\(Int(intensity)) / 10").font(.subheadline.weight(.semibold)); Slider(value: $intensity, in: 1...10, step: 1) }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
                 .liquidGlassCard(cornerRadius: 18)
             HStack(spacing: 4) {
                 ForEach(RescueAction.allCases) { action in
@@ -54,7 +75,8 @@ struct CravingRescueView: View {
                     .buttonStyle(.plain)
                 }
             }
-                .padding()
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
                 .liquidGlassCard(cornerRadius: 18)
             Button {
                 showsFocusGame = true
@@ -62,7 +84,7 @@ struct CravingRescueView: View {
                 Label("玩 2 分钟专注小游戏", systemImage: "gamecontroller.fill")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
+                    .padding(.vertical, 4)
             }
             .buttonStyle(.bordered)
             .tint(.indigo)
@@ -71,24 +93,32 @@ struct CravingRescueView: View {
                 RescueChoice(title: "心情", selection: $mood, options: RecordChoices.moods)
             }
             if let action = selectedAction {
-                VStack(alignment: .leading, spacing: 10) {
-                    Label(action.title, systemImage: action.symbol).font(.headline)
-                    Text(action.instruction).foregroundStyle(.secondary)
-                    Button(completedAction ? "已完成" : "完成这个小动作") {
+                HStack(spacing: 10) {
+                    Image(systemName: action.symbol)
+                        .foregroundStyle(.tint)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(action.title).font(.subheadline.bold())
+                        Text(action.instruction).font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                    }
+                    Spacer(minLength: 4)
+                    Button(completedAction ? "已完成" : "完成") {
                         completedAction = true
                     }
                     .buttonStyle(.bordered)
                     .tint(completedAction ? .green : .blue)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
+                .padding(12)
                 .liquidGlassCard(tint: completedAction ? .green.opacity(0.14) : nil, cornerRadius: 18)
             }
-            Button("我坚持过去了") { saveSuccess() }.buttonStyle(.borderedProminent).controlSize(.large).frame(maxWidth: .infinity)
+            Button("我坚持过去了") { saveSuccess() }.buttonStyle(.borderedProminent).controlSize(.regular).frame(maxWidth: .infinity)
             Button("我复吸了", role: .destructive) { showsRelapseSheet = true }
                 .font(.subheadline)
-        }.padding()
-        }.onReceive(timer) { now = $0 }.navigationTitle("烟瘾急救").navigationBarTitleDisplayMode(.inline)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .onReceive(timer) { now = $0 }.navigationTitle("烟瘾急救").navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("关闭") { dismiss() } } }
         .sheet(isPresented: $showsRelapseSheet) {
             NavigationStack {
