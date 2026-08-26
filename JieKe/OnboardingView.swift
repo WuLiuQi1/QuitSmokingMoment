@@ -42,7 +42,7 @@ struct OnboardingView: View {
                     .padding(.vertical, 18)
             }
             .liquidGlassProminentButton()
-            .tint(.green)
+            .tint(.blue)
             .padding(.horizontal, 28)
             .padding(.top, 12)
             .padding(.bottom, 8)
@@ -66,7 +66,7 @@ struct OnboardingView: View {
             .accessibilityLabel("上一步")
 
             ProgressView(value: Double(step + 1), total: Double(totalSteps))
-                .tint(.green)
+                .tint(.blue)
                 .accessibilityLabel("填写进度")
                 .accessibilityValue("第 \(step + 1) 项，共 \(totalSteps) 项")
         }
@@ -129,7 +129,7 @@ struct OnboardingView: View {
         OnboardingStep(icon: "flag.checkered", title: "从什么时候开始戒烟？", detail: "可以选择现在，也可以补记你的戒烟开始时间。") {
             DatePicker("戒烟开始时间", selection: $quitDate, in: ...Date(), displayedComponents: [.date, .hourAndMinute])
                 .datePickerStyle(.graphical)
-                .tint(.green)
+                .tint(.blue)
                 .padding()
                 .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
                 .padding(.horizontal, 24)
@@ -179,25 +179,25 @@ private struct OnboardingStep<Content: View>: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer(minLength: 28)
+            Spacer(minLength: 18)
             Image(systemName: icon)
                 .symbolRenderingMode(.hierarchical)
-                .font(.system(size: 72, weight: .medium))
-                .foregroundStyle(.green)
-                .frame(height: 130)
+                .font(.system(size: 58, weight: .medium))
+                .foregroundStyle(.blue)
+                .frame(height: 104)
             Text(title)
-                .font(.system(.title, design: .rounded, weight: .bold))
+                .font(.system(.title2, design: .rounded, weight: .bold))
                 .multilineTextAlignment(.center)
-                .padding(.top, 36)
+                .padding(.top, 24)
             Text(detail)
-                .font(.body)
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.top, 18)
-                .padding(.horizontal, 38)
-            Spacer(minLength: 38)
+                .padding(.top, 12)
+                .padding(.horizontal, 42)
+            Spacer(minLength: 26)
             content
-            Spacer(minLength: 120)
+            Spacer(minLength: 96)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -210,22 +210,22 @@ private struct OnboardingValueControl: View {
     let increment: () -> Void
 
     var body: some View {
-        HStack(spacing: 42) {
+        HStack(spacing: 28) {
             Button(action: decrement) { Image(systemName: "minus") }
                 .accessibilityLabel("减少")
             VStack(spacing: 4) {
                 Text(value)
-                    .font(.system(size: 64, weight: .bold, design: .rounded))
-                    .foregroundStyle(.green)
+                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                    .foregroundStyle(.blue)
                     .contentTransition(.numericText())
                     .minimumScaleFactor(0.6)
                 Text(unit).font(.title3.weight(.semibold)).foregroundStyle(.secondary)
             }
-            .frame(minWidth: 150)
+            .frame(minWidth: 120)
             Button(action: increment) { Image(systemName: "plus") }
                 .accessibilityLabel("增加")
         }
-        .font(.title2.weight(.bold))
+        .font(.title3.weight(.bold))
         .buttonStyle(OnboardingRoundButtonStyle())
     }
 }
@@ -233,8 +233,8 @@ private struct OnboardingValueControl: View {
 private struct OnboardingRoundButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .frame(width: 62, height: 62)
-            .background(Color.green.opacity(configuration.isPressed ? 0.65 : 0.82), in: Circle())
+            .frame(width: 52, height: 52)
+            .background(Color.blue.opacity(configuration.isPressed ? 0.65 : 0.82), in: Circle())
             .foregroundStyle(.white)
             .scaleEffect(configuration.isPressed ? 0.92 : 1)
     }
