@@ -59,6 +59,7 @@ struct QuitSmokingEducationView: View {
             Link("世界卫生组织：戒烟支持", destination: URL(string: "https://www.who.int/teams/health-promotion/tobacco-control/quitting")!)
             Link("世界卫生组织：成人烟草戒断临床指南", destination: URL(string: "https://www.who.int/news/item/02-07-2024-who-releases-first-ever-clinical-treatment-guideline-for-tobacco-cessation-in-adults")!)
             Link("CDC：戒烟建议", destination: URL(string: "https://www.cdc.gov/tobacco/campaign/tips/quit-smoking/tips-for-quitting/index.html")!)
+            Link("CDC：吸烟与生殖健康", destination: URL(string: "https://www.cdc.gov/tobacco/about/cigarettes-and-reproductive-health.html")!)
             Text("本页为健康教育内容，不替代医生诊断、治疗或个体化用药建议。")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
@@ -71,7 +72,7 @@ struct QuitSmokingEducationView: View {
 }
 
 private enum QuitEducationArticle: String, CaseIterable, Identifiable {
-    case harms, science, craving, lapse
+    case harms, science, craving, lapse, familyPlanning
 
     var id: String { rawValue }
 
@@ -81,6 +82,7 @@ private enum QuitEducationArticle: String, CaseIterable, Identifiable {
         case .science: return "怎样科学戒烟"
         case .craving: return "烟瘾来了怎么办"
         case .lapse: return "复吸后如何继续"
+        case .familyPlanning: return "备孕与孕期：两个人一起戒烟"
         }
     }
 
@@ -90,6 +92,7 @@ private enum QuitEducationArticle: String, CaseIterable, Identifiable {
         case .science: return "checklist"
         case .craving: return "shield.lefthalf.filled"
         case .lapse: return "arrow.uturn.backward.circle.fill"
+        case .familyPlanning: return "figure.2.and.child.holdinghands"
         }
     }
 
@@ -99,6 +102,7 @@ private enum QuitEducationArticle: String, CaseIterable, Identifiable {
         case .science: return .blue
         case .craving: return .mint
         case .lapse: return .red
+        case .familyPlanning: return .pink
         }
     }
 
@@ -108,6 +112,7 @@ private enum QuitEducationArticle: String, CaseIterable, Identifiable {
         case .science: return "戒烟是一个过程；支持、计划和工具比单独硬扛更可靠。"
         case .craving: return "先给自己几分钟。烟瘾会来，也会过去。"
         case .lapse: return "复吸不是清零，而是一次了解自己的机会。"
+        case .familyPlanning: return "从备孕开始，让家里成为无烟空间；男女双方都值得一起行动。"
         }
     }
 
@@ -138,6 +143,13 @@ private enum QuitEducationArticle: String, CaseIterable, Identifiable {
                 EducationDetailSection("先记录事实，不评价自己", ["记录抽了多少支、当时的诱因、心情和地点。", "一次复吸不等于之前的努力消失，也不必因此放弃整个计划。"]),
                 EducationDetailSection("找出下一次的分叉点", ["回想：我是在什么场景、什么情绪下开始想抽？", "为同类场景准备一个更小的替代动作，例如先喝水、离开现场或发消息求助。"]),
                 EducationDetailSection("立刻回到计划", ["把剩下的烟和相关物品移开，重新选择下一次不抽。", "如果反复复吸或烟瘾很强，尽早向医生、戒烟门诊或药师寻求支持。"])
+            ]
+        case .familyPlanning:
+            [
+                EducationDetailSection("备孕：双方一起准备", ["吸烟会影响男女双方的生育能力；男性吸烟可能损害精子，并增加勃起功能问题的风险。", "最理想是在尝试怀孕前停止吸烟和尼古丁产品，也尽量避免二手烟。"]),
+                EducationDetailSection("女性：怀孕期间为什么更要戒", ["孕期吸烟会增加早产、胎儿生长受限、低出生体重、死胎等不良妊娠结局的风险。", "尼古丁和烟草烟雾中的有害物质可影响胎儿的氧气与营养供应，并可能伤害发育中的脑和肺。", "怀孕后才开始戒也仍有益处；越早停止越好。"]),
+                EducationDetailSection("男性：你的戒烟同样重要", ["不在伴侣身边吸烟，帮助家里保持无烟，能减少孕期二手烟暴露。", "戒烟不仅是“陪伴”，也有助于保护自身生育健康，并为孩子出生后的无烟环境做好准备。"]),
+                EducationDetailSection("更安全地开始", ["把“共同戒烟日”定在备孕计划里，清理家中烟草、电子烟和相关用品。", "如果已经怀孕、备孕困难或烟瘾很强，请向产科、戒烟门诊或医生咨询；不要自行决定戒烟药物或尼古丁替代方案。", "电子烟、加热烟和无烟烟草也可能含有尼古丁，备孕和孕期同样建议避免。"])
             ]
         }
     }
@@ -232,6 +244,10 @@ private struct QuitSmokingEducationDetailView: View {
                         .font(.headline)
                     Link("世界卫生组织：戒烟支持", destination: URL(string: "https://www.who.int/teams/health-promotion/tobacco-control/quitting")!)
                     Link("CDC：戒烟建议", destination: URL(string: "https://www.cdc.gov/tobacco/campaign/tips/quit-smoking/tips-for-quitting/index.html")!)
+                    if article == .familyPlanning {
+                        Link("CDC：吸烟与生殖健康", destination: URL(string: "https://www.cdc.gov/tobacco/about/cigarettes-and-reproductive-health.html")!)
+                        Link("ACOG：烟草、酒精、药物与怀孕", destination: URL(string: "https://www.acog.org/womens-health/faqs/tobacco-alcohol-drugs-and-pregnancy")!)
+                    }
                     Text("本页为健康教育内容，不替代医生诊断、治疗或个体化用药建议。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
