@@ -101,7 +101,7 @@ struct QuitCalendarSnapshot {
             calendar.component(.day, from: $0.createdAt)
         }
         let range = calendar.range(of: .day, in: .month, for: now)!
-        let days = range.compactMap { value in
+        let days: [QuitCalendarDay] = range.compactMap { (value: Int) -> QuitCalendarDay? in
             guard let date = calendar.date(bySetting: .day, value: value, of: month.start) else { return nil }
             let dayRecords = recordsByDay[value] ?? []
             return QuitCalendarDay(
