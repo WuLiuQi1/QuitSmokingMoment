@@ -16,6 +16,7 @@ struct CravingRescueView: View {
     @State private var startedAt = Date()
     @State private var now = Date()
     @State private var isExpanded = false
+    @State private var isBreathing = false
     @State private var showsRelapseSheet = false
     @State private var showsFocusGame = false
     @State private var cigaretteCount = 1
@@ -34,12 +35,16 @@ struct CravingRescueView: View {
                 Ellipse()
                     .fill(.blue.opacity(0.12))
                     .frame(width: 238, height: 188)
-                    .rotationEffect(.degrees(-12))
+                    .scaleEffect(isBreathing ? 1.06 : 0.94)
+                    .rotationEffect(.degrees(isBreathing ? -7 : -17))
                     .blur(radius: 2)
+                    .animation(.easeInOut(duration: 4.6).repeatForever(autoreverses: true), value: isBreathing)
                 Circle()
                     .fill(.cyan.opacity(0.14))
                     .frame(width: 202, height: 202)
-                    .offset(x: -10, y: 5)
+                    .scaleEffect(isBreathing ? 1.03 : 0.93)
+                    .offset(x: isBreathing ? -3 : -16, y: isBreathing ? 8 : 1)
+                    .animation(.easeInOut(duration: 3.7).repeatForever(autoreverses: true), value: isBreathing)
                 Circle()
                     .fill(.blue.opacity(0.24))
                     .frame(width: isExpanded ? 164 : 112, height: isExpanded ? 164 : 112)
@@ -47,6 +52,9 @@ struct CravingRescueView: View {
                 Circle()
                     .stroke(.white.opacity(0.55), lineWidth: 1)
                     .frame(width: 202, height: 202)
+                    .scaleEffect(isBreathing ? 1.04 : 0.96)
+                    .opacity(isBreathing ? 0.85 : 0.45)
+                    .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: isBreathing)
                 VStack(spacing: 5) {
                     Text("给自己 3 分钟").font(.title3.bold())
                     Text("慢慢呼吸").font(.subheadline.bold())
@@ -54,7 +62,7 @@ struct CravingRescueView: View {
                         .font(.system(.title, design: .rounded, weight: .bold))
                 }
             }
-            .onAppear { isExpanded = true }
+            .onAppear { isExpanded = true; isBreathing = true }
             .frame(height: 218)
             Text("吸气 4 秒，停住 2 秒，呼气 6 秒。烟瘾会像浪一样退去。")
                 .font(.caption)
