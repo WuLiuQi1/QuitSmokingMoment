@@ -41,20 +41,24 @@ struct CravingRescueView: View {
                     .rotationEffect(.degrees(outerDriftsUpperLeft ? -7 : -17))
                     .offset(x: outerDriftsUpperLeft ? -22 : 12, y: outerDriftsUpperLeft ? -18 : 10)
                     .blur(radius: 2)
+                    .animation(.easeInOut(duration: 4.6).repeatForever(autoreverses: true), value: outerDriftsUpperLeft)
                 Circle()
                     .fill(.cyan.opacity(0.14))
                     .frame(width: 202, height: 202)
                     .scaleEffect(innerDriftsLowerRight ? 1.02 : 0.90)
                     .offset(x: innerDriftsLowerRight ? 22 : -10, y: innerDriftsLowerRight ? 18 : -8)
+                    .animation(.easeInOut(duration: 3.7).repeatForever(autoreverses: true), value: innerDriftsLowerRight)
                 Circle()
                     .fill(.blue.opacity(0.24))
                     .frame(width: isExpanded ? 164 : 112, height: isExpanded ? 164 : 112)
+                    .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: isExpanded)
                 Circle()
                     .stroke(.white.opacity(0.55), lineWidth: 1)
                     .frame(width: 202, height: 202)
                     .scaleEffect(ringDriftsUpperLeft ? 1.04 : 0.94)
                     .offset(x: ringDriftsUpperLeft ? -14 : 14, y: ringDriftsUpperLeft ? -14 : 14)
                     .opacity(ringDriftsUpperLeft ? 0.85 : 0.45)
+                    .animation(.easeInOut(duration: 4.1).repeatForever(autoreverses: true), value: ringDriftsUpperLeft)
                 VStack(spacing: 5) {
                     Text("给自己 3 分钟").font(.title3.bold())
                     Text("慢慢呼吸").font(.subheadline.bold())
@@ -166,18 +170,10 @@ struct CravingRescueView: View {
     }
 
     private func startBreathingMotion() {
-        withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
-            isExpanded = true
-        }
-        withAnimation(.easeInOut(duration: 4.6).repeatForever(autoreverses: true)) {
-            outerDriftsUpperLeft = true
-        }
-        withAnimation(.easeInOut(duration: 3.7).repeatForever(autoreverses: true)) {
-            innerDriftsLowerRight = true
-        }
-        withAnimation(.easeInOut(duration: 4.1).repeatForever(autoreverses: true)) {
-            ringDriftsUpperLeft = true
-        }
+        isExpanded = true
+        outerDriftsUpperLeft = true
+        innerDriftsLowerRight = true
+        ringDriftsUpperLeft = true
     }
 
     private func saveSuccess() {
