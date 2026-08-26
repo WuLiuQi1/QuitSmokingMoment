@@ -158,6 +158,14 @@ struct HomeMetricDetailView: View {
                         .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
                 }
                 ForEach(todayPoints) { point in
+                    AreaMark(
+                        x: .value("小时", point.hour),
+                        y: .value("数值", point.value)
+                    )
+                    .foregroundStyle(metric.tint.opacity(0.16))
+                    .interpolationMethod(.stepEnd)
+                }
+                ForEach(todayPoints) { point in
                     LineMark(
                         x: .value("小时", point.hour),
                         y: .value("数值", point.value)
@@ -165,6 +173,16 @@ struct HomeMetricDetailView: View {
                     .foregroundStyle(metric.tint)
                     .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
                     .interpolationMethod(.stepEnd)
+                }
+                ForEach(todayPoints.indices, id: \.self) { index in
+                    if index == todayPoints.count - 1 || todayPoints[index].value != todayPoints[max(0, index - 1)].value {
+                        PointMark(
+                            x: .value("小时", todayPoints[index].hour),
+                            y: .value("数值", todayPoints[index].value)
+                        )
+                        .foregroundStyle(metric.tint)
+                        .symbolSize(36)
+                    }
                 }
             }
             .chartXAxis {
