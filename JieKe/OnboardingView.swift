@@ -86,7 +86,7 @@ struct OnboardingView: View {
     }
 
     private var packPriceStep: some View {
-        OnboardingStep(icon: "yensign.circle.fill", title: "你常买的烟多少钱一包？", detail: "用于计算每一次忍住帮你节省的金额。") {
+        OnboardingStep(icon: "yensign.circle.fill", title: "你常买的烟多少钱一包？", detail: "用于计算每一次少吸帮你节省的金额。") {
             OnboardingValueControl(value: packPrice.formatted(.currency(code: "CNY").precision(.fractionLength(0))), unit: "每包", decrement: {
                 packPrice = max(1, packPrice - 1)
             }, increment: {

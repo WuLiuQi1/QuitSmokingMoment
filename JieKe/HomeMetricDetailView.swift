@@ -88,9 +88,9 @@ struct HomeMetricDetailView: View {
     private var insight: String {
         switch metric {
         case .avoided:
-            return todayValue == 0 ? "今天还没有忍住记录。下一次烟瘾来时，可以打开急救页给自己几分钟。" : "每成功忍住一次，按少抽 1 支计算；曲线显示今天累计的坚持。"
+            return todayValue == 0 ? "今天还没有少吸记录。下一次烟瘾来时，可以打开急救页给自己几分钟。" : "每成功少吸一次，按少抽 1 支计算；曲线显示今天累计的坚持。"
         case .saved:
-            return todayValue == 0 ? "节省金额会随成功忍住的记录更新。" : "节省按你的每包价格和每包支数换算；这是一笔看得见的坚持。"
+            return todayValue == 0 ? "节省金额会随成功少吸的记录更新。" : "节省按你的每包价格和每包支数换算；这是一笔看得见的坚持。"
         case .cravings:
             return todayValue == 0 ? "今天还没有记录烟瘾。提前记录诱因和心情，能帮助找到高风险时段。" : "曲线上升的时段，就是今天需要更多准备与支持的时段。"
         }
@@ -151,6 +151,11 @@ struct HomeMetricDetailView: View {
                     .foregroundStyle(.gray.opacity(0.6))
                     .lineStyle(StrokeStyle(lineWidth: 2, dash: [5, 4]))
                     .interpolationMethod(.stepEnd)
+                }
+                if todayValue == 0 {
+                    RuleMark(y: .value("今天", 0))
+                        .foregroundStyle(metric.tint)
+                        .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
                 }
                 ForEach(todayPoints) { point in
                     LineMark(

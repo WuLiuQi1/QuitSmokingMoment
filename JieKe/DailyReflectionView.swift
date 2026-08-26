@@ -28,7 +28,7 @@ struct DailyReflectionCard: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else {
-                    Text("今天成功忍住 \(successCount) 次，复吸 \(relapseCount) 次。")
+                    Text("今天成功少吸 \(successCount) 次，复吸 \(relapseCount) 次。")
                         .font(.title3.bold())
                         .foregroundStyle(.primary)
                     Text("花一分钟记下今天的感受，为明天做准备。")
@@ -64,7 +64,7 @@ struct DailyReflectionView: View {
     var body: some View {
         Form {
             Section("今日摘要") {
-                LabeledContent("成功忍住", value: "\(successCount) 次")
+                LabeledContent("成功少吸", value: "\(successCount) 次")
                 LabeledContent("复吸", value: "\(relapseCount) 次")
             }
             Section("今天感觉如何") {

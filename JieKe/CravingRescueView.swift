@@ -74,7 +74,7 @@ struct CravingRescueView: View {
                 .liquidGlassCard(tint: completedAction ? .green.opacity(0.14) : nil, cornerRadius: 18)
             }
             Button("我坚持过去了") { saveSuccess() }.buttonStyle(.borderedProminent).controlSize(.large).frame(maxWidth: .infinity)
-            Button("我没忍住", role: .destructive) { showsRelapseSheet = true }
+            Button("我复吸了", role: .destructive) { showsRelapseSheet = true }
                 .font(.subheadline)
         }.padding()
         }.onReceive(timer) { now = $0 }.navigationTitle("烟瘾急救").navigationBarTitleDisplayMode(.inline)
@@ -115,7 +115,7 @@ struct CravingRescueView: View {
             let message: (String, String)?
             switch nextCount {
             case 1: message = ("解锁成就", "你成功度过了第一次烟瘾，继续保持。")
-            case 10: message = ("解锁成就", "已成功忍住 10 次，每一次都很重要。")
+            case 10: message = ("解锁成就", "已成功少吸 10 次，每一次都很重要。")
             default: message = nil
             }
             if let message {
@@ -126,9 +126,9 @@ struct CravingRescueView: View {
             let profile = profiles.first
             let savedAfter = (profile.map { Double(nextCount) / Double(max($0.cigarettesPerPack, 1)) * $0.packPrice } ?? 0)
             if todayCount == dailyGoal {
-                Task { await NotificationManager.scheduleAchievement(title: "今日目标完成", body: "今天已成功忍住 \(dailyGoal) 次，做得很好。", identifier: "daily-goal-\(Date.now.formatted(.dateTime.year().month().day()))") }
+                Task { await NotificationManager.scheduleAchievement(title: "今日目标完成", body: "今天已成功少吸 \(dailyGoal) 次，做得很好。", identifier: "daily-goal-\(Date.now.formatted(.dateTime.year().month().day()))") }
             } else if weekCount == weeklyGoal {
-                Task { await NotificationManager.scheduleAchievement(title: "本周目标完成", body: "本周已成功忍住 \(weeklyGoal) 次，继续保持。", identifier: "weekly-goal-\(Calendar.current.component(.weekOfYear, from: .now))") }
+                Task { await NotificationManager.scheduleAchievement(title: "本周目标完成", body: "本周已成功少吸 \(weeklyGoal) 次，继续保持。", identifier: "weekly-goal-\(Calendar.current.component(.weekOfYear, from: .now))") }
             } else if savedAfter >= Double(savingsGoal), savedAfter - (profile.map { $0.packPrice / Double(max($0.cigarettesPerPack, 1)) } ?? 0) < Double(savingsGoal) {
                 Task { await NotificationManager.scheduleAchievement(title: "节省目标完成", body: "累计节省已达到 ¥\(savingsGoal)。", identifier: "savings-goal-\(savingsGoal)") }
             }

@@ -13,7 +13,7 @@ struct AchievementsView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("已解锁 \(unlockedCount) 枚成就")
                             .font(.title2.bold())
-                        Text("每一次忍住、每一天坚持，都会留下你的戒烟足迹。")
+                        Text("每一次少吸、每一天坚持，都会留下你的戒烟足迹。")
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)

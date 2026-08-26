@@ -12,7 +12,6 @@ struct HomeView: View {
     @State private var showsDailyPlan = false
     @State private var showsDailyReflection = false
     @State private var showsEducation = false
-    @State private var metricDetail: HomeMetricKind?
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 60)) { timeline in
@@ -34,11 +33,17 @@ struct HomeView: View {
                         .padding(.vertical, 28)
                         .liquidGlassCard(tint: .mint.opacity(0.18))
                         HStack(spacing: 10) {
-                            MetricCard(title: "少抽", value: "\(metrics.avoidedCigarettesText) 根", symbol: "lungs.fill") { metricDetail = .avoided }
-                            MetricCard(title: "节省", value: metrics.savedMoney.formatted(.currency(code: "CNY")), symbol: "yensign.circle.fill") { metricDetail = .saved }
-                            MetricCard(title: "今日烟瘾", value: "\(metrics.todayCravings) 次", symbol: "waveform.path.ecg") { metricDetail = .cravings }
+                            MetricCard(title: "少抽", value: "\(metrics.avoidedCigarettesText) 根", symbol: "lungs.fill") {
+                                HomeMetricDetailView(metric: .avoided, profile: profile, records: records)
+                            }
+                            MetricCard(title: "节省", value: metrics.savedMoney.formatted(.currency(code: "CNY")), symbol: "yensign.circle.fill") {
+                                HomeMetricDetailView(metric: .saved, profile: profile, records: records)
+                            }
+                            MetricCard(title: "今日烟瘾", value: "\(metrics.todayCravings) 次", symbol: "waveform.path.ecg") {
+                                HomeMetricDetailView(metric: .cravings, profile: profile, records: records)
+                            }
                         }
-                        Text("每成功忍住 1 次，计为少抽 1 支；已成功度过 \(metrics.successfullyHandledCravings) 次烟瘾。")
+                        Text("每成功少吸 1 次，计为少抽 1 支；已成功度过 \(metrics.successfullyHandledCravings) 次烟瘾。")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -150,11 +155,6 @@ struct HomeView: View {
             NavigationStack { DailyReflectionView(reflection: reflections.first(where: { Calendar.current.isDateInToday($0.createdAt) }), successCount: records.filter { !$0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count, relapseCount: records.filter { $0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count) }
         }
         .sheet(isPresented: $showsEducation) { NavigationStack { QuitSmokingEducationView() } }
-        .sheet(item: $metricDetail) { metric in
-            if let profile = profiles.first {
-                NavigationStack { HomeMetricDetailView(metric: metric, profile: profile, records: records) }
-            }
-        }
     }
 
     private func publishSystemSurfaces(profile: QuitProfile) {
@@ -207,11 +207,21 @@ private struct AchievementPreview: View {
     }
 }
 
-private struct MetricCard: View {
+private struct MetricCard<Destination: View>: View {
     let title: String; let value: String; let symbol: String
-    let action: () -> Void
+    let destination: Destination
+
+    init(title: String, value: String, symbol: String, @ViewBuilder destination: () -> Destination) {
+        self.title = title
+        self.value = value
+        self.symbol = symbol
+        self.destination = destination()
+    }
+
     var body: some View {
-        Button(action: action) {
+        NavigationLink {
+            destination
+        } label: {
             VStack(spacing: 8) {
                 Image(systemName: symbol).foregroundStyle(.tint)
                 Text(value).font(.headline).lineLimit(1).minimumScaleFactor(0.75)

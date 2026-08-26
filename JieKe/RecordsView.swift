@@ -77,7 +77,7 @@ private enum RecordFilter: CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .all: "全部"
-        case .success: "忍住"
+        case .success: "少吸"
         case .relapse: "复吸"
         }
     }
@@ -92,7 +92,7 @@ private struct RecordRow: View {
                 .foregroundStyle(record.didSmoke ? .orange : .green)
                 .font(.title3)
             VStack(alignment: .leading, spacing: 2) {
-                Text(record.didSmoke ? "已抽烟 \(record.cigaretteCount) 根" : "成功忍住了")
+                Text(record.didSmoke ? "已抽烟 \(record.cigaretteCount) 根" : "成功少吸了")
                     .font(.body.weight(.semibold))
                 Text("强度 \(record.intensity) · \(record.mood)\(record.trigger.isEmpty ? "" : " · \(record.trigger)")")
                     .font(.caption)

@@ -25,10 +25,10 @@ struct DailyPlanCard: View {
                 .buttonStyle(.borderless)
             }
             HStack(alignment: .firstTextBaseline) {
-                Text("忍住 \(min(successCount, goal)) / \(goal) 次")
+                Text("少吸 \(min(successCount, goal)) / \(goal) 次")
                     .font(.title3.bold())
                 Spacer()
-                Text(successCount >= goal ? "今日目标已完成" : "再忍住 \(max(0, goal - successCount)) 次")
+                Text(successCount >= goal ? "今日目标已完成" : "再少吸 \(max(0, goal - successCount)) 次")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(successCount >= goal ? .green : .secondary)
             }
@@ -86,18 +86,18 @@ struct DailyPlanView: View {
     var body: some View {
         Form {
             Section("今天的目标") {
-                Stepper("成功忍住 \(goal) 次", value: $goal, in: 1...20)
+                Stepper("成功少吸 \(goal) 次", value: $goal, in: 1...20)
                 ProgressView(value: Double(min(successCount, goal)), total: Double(max(goal, 1)))
                     .tint(successCount >= goal ? .green : .indigo)
-                Text(successCount >= goal ? "今天的目标已经完成，继续保持。" : "今天已成功忍住 \(successCount) 次，还差 \(goal - successCount) 次。")
+                Text(successCount >= goal ? "今天的目标已经完成，继续保持。" : "今天已成功少吸 \(successCount) 次，还差 \(goal - successCount) 次。")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
             Section("个性化目标") {
-                Stepper("本周成功忍住 \(weeklyGoal) 次", value: $weeklyGoal, in: 1...100)
+                Stepper("本周成功少吸 \(weeklyGoal) 次", value: $weeklyGoal, in: 1...100)
                 ProgressView(value: Double(min(weeklySuccessCount, weeklyGoal)), total: Double(max(weeklyGoal, 1)))
                     .tint(weeklySuccessCount >= weeklyGoal ? .green : .blue)
-                Text("本周已成功忍住 \(weeklySuccessCount) 次。")
+                Text("本周已成功少吸 \(weeklySuccessCount) 次。")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
 
@@ -120,7 +120,7 @@ struct DailyPlanView: View {
                 }
             }
             Section {
-                Text("计划每天会自动重新开始；“忍住次数”以实际保存的成功烟瘾记录为准。")
+                Text("计划每天会自动重新开始；“少吸次数”以实际保存的成功烟瘾记录为准。")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }

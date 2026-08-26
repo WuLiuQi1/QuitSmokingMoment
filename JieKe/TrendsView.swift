@@ -54,7 +54,7 @@ struct TrendsView: View {
                     LabeledContent("少抽", value: "\(quitMetrics.avoidedCigarettesText) 根")
                     LabeledContent("已成功度过", value: "\(quitMetrics.successfullyHandledCravings) 次")
                     LabeledContent("连续无复吸", value: quitMetrics.relapseFreeText)
-                    Text("每成功忍住 1 次，记为少抽 1 支，并按每包价格换算节省金额。")
+                    Text("每成功少吸 1 次，记为少抽 1 支，并按每包价格换算节省金额。")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -78,7 +78,7 @@ struct TrendsView: View {
                             HStack {
                                 Label(item.name, systemImage: item.symbol)
                                 Spacer()
-                                Text("\(item.successCount) / \(item.totalCount) 次忍住")
+                                Text("\(item.successCount) / \(item.totalCount) 次少吸")
                                     .foregroundStyle(.secondary)
                             }
                             ProgressView(value: item.successRate)
@@ -287,7 +287,7 @@ private struct ScreenTimeTrendCard: View {
             VStack(alignment: .leading, spacing: 24) {
                 Text("\(successCount + relapseCount) 次")
                     .font(.system(.title, design: .rounded, weight: .bold))
-                TrendLegend(color: .green, title: "忍住", value: "\(successCount) 次")
+                TrendLegend(color: .green, title: "少吸", value: "\(successCount) 次")
                 TrendLegend(color: .red, title: "复吸", value: "\(relapseCount) 次")
             }
             .frame(width: 92, alignment: .leading)
@@ -296,7 +296,7 @@ private struct ScreenTimeTrendCard: View {
         .padding(18)
         .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(period.rawValue)烟瘾趋势：共 \(successCount + relapseCount) 次，其中忍住 \(successCount) 次，复吸 \(relapseCount) 次")
+        .accessibilityLabel("\(period.rawValue)烟瘾趋势：共 \(successCount + relapseCount) 次，其中少吸 \(successCount) 次，复吸 \(relapseCount) 次")
     }
 
     private var visibleLabels: [String] {

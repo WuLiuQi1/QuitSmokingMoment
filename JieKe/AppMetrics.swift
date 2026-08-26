@@ -56,7 +56,7 @@ struct QuitMetrics {
         return [
             QuitAchievement(title: "迈出第一步", detail: "成功度过 1 次烟瘾", symbol: "figure.walk", tint: .blue, isUnlocked: successfullyHandledCravings >= 1),
             QuitAchievement(title: "首日坚持", detail: "已戒烟满 24 小时", symbol: "sun.max.fill", tint: .orange, isUnlocked: quitDays >= 1),
-            QuitAchievement(title: "十次忍住", detail: "成功度过 10 次烟瘾", symbol: "hands.clap.fill", tint: .green, isUnlocked: successfullyHandledCravings >= 10),
+            QuitAchievement(title: "十次少吸", detail: "成功度过 10 次烟瘾", symbol: "hands.clap.fill", tint: .green, isUnlocked: successfullyHandledCravings >= 10),
             QuitAchievement(title: "省下第一笔", detail: "累计节省满 ¥10", symbol: "yensign.circle.fill", tint: .mint, isUnlocked: savedMoney >= 10),
             QuitAchievement(title: "一周新生活", detail: "已戒烟满 7 天", symbol: "calendar.badge.checkmark", tint: .purple, isUnlocked: quitDays >= 7),
             QuitAchievement(title: "重新站稳", detail: "连续无复吸满 3 天", symbol: "shield.checkered", tint: .teal, isUnlocked: relapseFreeDays >= 3)
@@ -116,8 +116,38 @@ struct QuitAchievement: Identifiable {
 }
 
 enum RecordChoices {
-    static let moods = ["平静", "焦虑", "烦躁", "疲惫", "开心", "压力大"]
-    static let triggers = ["饭后", "工作压力", "社交", "喝酒", "开车", "无聊", "看到别人抽烟", "其他"]
+    static let defaultMoods = ["平静", "焦虑", "烦躁", "疲惫", "开心", "压力大"]
+    static let defaultTriggers = ["饭后", "工作压力", "社交", "喝酒", "开车", "无聊", "看到别人抽烟", "其他"]
+
+    static var moods: [String] { defaultMoods + RecordChoiceStore.customMoods }
+    static var triggers: [String] { defaultTriggers + RecordChoiceStore.customTriggers }
+}
+
+enum RecordChoiceStore {
+    private static let moodsKey = "customRecordMoods"
+    private static let triggersKey = "customRecordTriggers"
+
+    static var customMoods: [String] { values(for: moodsKey) }
+    static var customTriggers: [String] { values(for: triggersKey) }
+
+    static func addMood(_ value: String) { add(value, key: moodsKey, excluding: RecordChoices.defaultMoods) }
+    static func addTrigger(_ value: String) { add(value, key: triggersKey, excluding: RecordChoices.defaultTriggers) }
+    static func removeMood(_ value: String) { remove(value, key: moodsKey) }
+    static func removeTrigger(_ value: String) { remove(value, key: triggersKey) }
+
+    private static func values(for key: String) -> [String] {
+        UserDefaults.standard.stringArray(forKey: key) ?? []
+    }
+
+    private static func add(_ rawValue: String, key: String, excluding defaults: [String]) {
+        let value = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !value.isEmpty, !defaults.contains(value), !values(for: key).contains(value) else { return }
+        UserDefaults.standard.set(values(for: key) + [value], forKey: key)
+    }
+
+    private static func remove(_ value: String, key: String) {
+        UserDefaults.standard.set(values(for: key).filter { $0 != value }, forKey: key)
+    }
 }
 
 enum SummaryPeriod: String, CaseIterable, Identifiable {

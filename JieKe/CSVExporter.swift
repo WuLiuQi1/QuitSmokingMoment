@@ -10,7 +10,7 @@ enum CSVExporter {
                 String(record.intensity),
                 record.mood,
                 record.trigger,
-                record.didSmoke ? "复吸" : "忍住",
+                record.didSmoke ? "复吸" : "少吸",
                 String(record.cigaretteCount),
                 record.note,
                 record.copingMethod

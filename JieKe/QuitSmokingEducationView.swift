@@ -136,7 +136,7 @@ private enum QuitEducationArticle: String, CaseIterable, Identifiable {
             [
                 EducationDetailSection("先延迟，不急着决定", ["告诉自己先等 3–5 分钟，不必承诺永远不抽，只处理眼前这一阵。", "烟瘾常会随着时间起伏，给自己空间后可能开始减弱。"]),
                 EducationDetailSection("把注意力交给身体", ["慢慢吸气、停一停、再更慢地呼气；重复几轮。", "喝一杯水、走动几分钟、嚼无糖口香糖，或联系一个支持你的人。"]),
-                EducationDetailSection("把这次变成下一次的准备", ["在急救页面选择诱因和心情，并记录当前强度。", "忍住后记一次成功；即使抽了，也如实记录，不用责备自己。"])
+                EducationDetailSection("把这次变成下一次的准备", ["在急救页面选择诱因和心情，并记录当前强度。", "少吸后记一次成功；即使抽了，也如实记录，不用责备自己。"])
             ]
         case .lapse:
             [

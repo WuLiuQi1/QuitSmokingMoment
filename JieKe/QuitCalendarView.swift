@@ -20,7 +20,7 @@ struct QuitCalendarView: View {
                 Text(snapshot.monthStart, format: .dateTime.year().month())
                     .font(.headline)
                 Spacer()
-                Label("忍住", systemImage: "circle.fill").foregroundStyle(.green)
+                Label("少吸", systemImage: "circle.fill").foregroundStyle(.green)
                 Label("复吸", systemImage: "circle.fill").foregroundStyle(.red)
             }
             .font(.caption)
@@ -139,7 +139,7 @@ private struct CalendarDayDetail: View {
         List {
             Section {
                 LabeledContent("烟瘾记录", value: "\(records.count) 次")
-                LabeledContent("成功忍住", value: "\(records.filter { !$0.didSmoke }.count) 次")
+                LabeledContent("成功少吸", value: "\(records.filter { !$0.didSmoke }.count) 次")
                 LabeledContent("复吸", value: "\(records.filter(\.didSmoke).count) 次")
             }
             if records.isEmpty {
@@ -149,7 +149,7 @@ private struct CalendarDayDetail: View {
                     ForEach(records) { record in
                         VStack(alignment: .leading, spacing: 5) {
                             HStack {
-                                Text(record.didSmoke ? "复吸 \(record.cigaretteCount) 根" : "成功忍住")
+                                Text(record.didSmoke ? "复吸 \(record.cigaretteCount) 根" : "成功少吸")
                                     .foregroundStyle(record.didSmoke ? .red : .green)
                                 Spacer()
                                 Text(record.createdAt, format: .dateTime.hour().minute())
