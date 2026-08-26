@@ -113,7 +113,8 @@ struct QuitCalendarSnapshot {
         }
         let requiredCells = leadingDays + days.count
         rowCount = max(5, Int(ceil(Double(requiredCells) / 7.0)))
-        cells = Array(repeating: nil, count: leadingDays) + days.map(Optional.some)
+        let emptyLeadingCells = Array<QuitCalendarDay?>(repeating: nil, count: leadingDays)
+        cells = emptyLeadingCells + days.map { Optional<QuitCalendarDay>.some($0) }
     }
 }
 
