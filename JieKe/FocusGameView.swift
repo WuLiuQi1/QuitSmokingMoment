@@ -1,4 +1,3 @@
-import Combine
 import SwiftUI
 import UIKit
 
@@ -6,16 +5,12 @@ struct FocusGameView: View {
     @Environment(\.dismiss) private var dismiss
     let onCompleted: () -> Void
 
-    @State private var startedAt = Date()
-    @State private var now = Date()
+    @State private var remainingSeconds = 120
+    @State private var gameTimer: Timer?
     @State private var score = 0
     @State private var target = UnitPoint(x: 0.5, y: 0.5)
     @State private var isFinished = false
-    @State private var hasStarted = false
-
-    private let duration = 120.0
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    private var remaining: Int { max(0, Int(ceil(duration - now.timeIntervalSince(startedAt)))) }
+    private var remaining: Int { max(0, remainingSeconds) }
 
     var body: some View {
         VStack(spacing: 18) {
@@ -32,7 +27,11 @@ struct FocusGameView: View {
             }
 
             HStack {
-                Label("专注 (score) 次", systemImage: "hand.tap.fill")
+                Label {
+                    Text("专注 ") + Text(score.description) + Text(" 次")
+                } icon: {
+                    Image(systemName: "hand.tap.fill")
+                }
                 Spacer()
                 Text(isFinished ? "完成" : timeText)
                     .monospacedDigit()
@@ -106,16 +105,12 @@ struct FocusGameView: View {
             }
         }
         .onAppear {
-            startedAt = .now
-            now = .now
-            hasStarted = true
+            remainingSeconds = 120
+            isFinished = false
             target = randomTarget
+            startTimer()
         }
-        .onReceive(timer) { date in
-            guard hasStarted, !isFinished else { return }
-            now = date
-            if remaining == 0 { isFinished = true }
-        }
+        .onDisappear { gameTimer?.invalidate() }
     }
 
     private var timeText: String {
@@ -127,6 +122,22 @@ struct FocusGameView: View {
         score += 1
         target = randomTarget
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    private func startTimer() {
+        gameTimer?.invalidate()
+        gameTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            DispatchQueue.main.async {
+                guard !isFinished else { return }
+                if remainingSeconds > 0 {
+                    remainingSeconds -= 1
+                }
+                if remainingSeconds == 0 {
+                    isFinished = true
+                    gameTimer?.invalidate()
+                }
+            }
+        }
     }
 
     private var randomTarget: UnitPoint {
