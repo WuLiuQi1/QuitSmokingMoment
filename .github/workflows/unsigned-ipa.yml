@@ -44,7 +44,15 @@ jobs:
         run: |
           APP_PATH="$(find DerivedData/Build/Products/Release-iphoneos -maxdepth 1 -name '*.app' -print -quit)"
           test -n "$APP_PATH"
-          codesign --force --sign - "$APP_PATH"
+          # Sign embedded extensions first, then the containing app.  Preserve
+          # the App Group entitlement in both targets so WidgetKit can open the
+          # same shared UserDefaults container as the app.
+          if [ -d "$APP_PATH/PlugIns" ]; then
+            while IFS= read -r -d '' EXTENSION_PATH; do
+              codesign --force --sign - --entitlements Widget/QuitSmokingMomentWidget.entitlements "$EXTENSION_PATH"
+            done < <(find "$APP_PATH/PlugIns" -name '*.appex' -type d -print0)
+          fi
+          codesign --force --sign - --entitlements JieKe/QuitSmokingMoment.entitlements "$APP_PATH"
           codesign --verify --deep --strict "$APP_PATH"
 
       - name: Package jailbreak-compatible IPA

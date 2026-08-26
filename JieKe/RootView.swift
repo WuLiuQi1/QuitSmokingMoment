@@ -3,8 +3,27 @@ import SwiftUI
 
 struct RootView: View {
     @Query private var profiles: [QuitProfile]
+    @Query(sort: \CravingRecord.createdAt) private var records: [CravingRecord]
     @AppStorage("reduceMotionInApp") private var reduceMotionInApp = false
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showsRescueFromWidget = false
+
+    /// Changes whenever data shown by the widget changes. Keeping this at the
+    /// root means records added or edited from any tab are shared immediately.
+    private var widgetSyncToken: String {
+        guard let profile = profiles.first else { return "no-profile" }
+        let recordState = records.map {
+            "\($0.createdAt.timeIntervalSinceReferenceDate)|\($0.didSmoke)|\($0.cigaretteCount)|\($0.intensity)"
+        }.joined(separator: ",")
+        return [
+            String(profile.quitDate.timeIntervalSinceReferenceDate),
+            String(profile.cigarettesPerDay),
+            String(profile.packPrice),
+            String(profile.cigarettesPerPack),
+            recordState
+        ].joined(separator: "#")
+    }
+
     var body: some View {
         Group {
             if profiles.isEmpty { OnboardingView() } else { MainTabView() }
@@ -14,6 +33,18 @@ struct RootView: View {
         }
         .onOpenURL { url in
             if url.scheme == "jieke", url.host == "rescue" { showsRescueFromWidget = true }
+        }
+        .task(id: widgetSyncToken) {
+            // Avoid publishing a half-written SwiftData edit while a user is typing.
+            try? await Task.sleep(for: .milliseconds(250))
+            guard !Task.isCancelled, let profile = profiles.first else { return }
+            WidgetDataStore.publish(profile: profile, records: records)
+            await LiveActivityManager.update(profile: profile, records: records)
+        }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active, let profile = profiles.first else { return }
+            WidgetDataStore.publish(profile: profile, records: records)
+            Task { await LiveActivityManager.update(profile: profile, records: records) }
         }
         .sheet(isPresented: $showsRescueFromWidget) { NavigationStack { CravingRescueView() } }
     }
