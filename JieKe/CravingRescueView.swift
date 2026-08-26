@@ -16,7 +16,9 @@ struct CravingRescueView: View {
     @State private var startedAt = Date()
     @State private var now = Date()
     @State private var isExpanded = false
-    @State private var isBreathing = false
+    @State private var outerDriftsUpperLeft = false
+    @State private var innerDriftsLowerRight = false
+    @State private var ringDriftsUpperLeft = false
     @State private var showsRelapseSheet = false
     @State private var showsFocusGame = false
     @State private var cigaretteCount = 1
@@ -35,28 +37,24 @@ struct CravingRescueView: View {
                 Ellipse()
                     .fill(.blue.opacity(0.12))
                     .frame(width: 238, height: 188)
-                    .scaleEffect(isBreathing ? 1.06 : 0.94)
-                    .rotationEffect(.degrees(isBreathing ? -7 : -17))
-                    .offset(x: isBreathing ? -16 : 10, y: isBreathing ? -14 : 8)
+                    .scaleEffect(outerDriftsUpperLeft ? 1.06 : 0.94)
+                    .rotationEffect(.degrees(outerDriftsUpperLeft ? -7 : -17))
+                    .offset(x: outerDriftsUpperLeft ? -22 : 12, y: outerDriftsUpperLeft ? -18 : 10)
                     .blur(radius: 2)
-                    .animation(.easeInOut(duration: 4.6).repeatForever(autoreverses: true), value: isBreathing)
                 Circle()
                     .fill(.cyan.opacity(0.14))
                     .frame(width: 202, height: 202)
-                    .scaleEffect(isBreathing ? 0.98 : 0.91)
-                    .offset(x: isBreathing ? 15 : -8, y: isBreathing ? 14 : -7)
-                    .animation(.easeInOut(duration: 3.7).repeatForever(autoreverses: true), value: isBreathing)
+                    .scaleEffect(innerDriftsLowerRight ? 1.02 : 0.90)
+                    .offset(x: innerDriftsLowerRight ? 22 : -10, y: innerDriftsLowerRight ? 18 : -8)
                 Circle()
                     .fill(.blue.opacity(0.24))
                     .frame(width: isExpanded ? 164 : 112, height: isExpanded ? 164 : 112)
-                    .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: isExpanded)
                 Circle()
                     .stroke(.white.opacity(0.55), lineWidth: 1)
                     .frame(width: 202, height: 202)
-                    .scaleEffect(isBreathing ? 1.04 : 0.94)
-                    .offset(x: isBreathing ? -10 : 12, y: isBreathing ? -10 : 12)
-                    .opacity(isBreathing ? 0.85 : 0.45)
-                    .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: isBreathing)
+                    .scaleEffect(ringDriftsUpperLeft ? 1.04 : 0.94)
+                    .offset(x: ringDriftsUpperLeft ? -14 : 14, y: ringDriftsUpperLeft ? -14 : 14)
+                    .opacity(ringDriftsUpperLeft ? 0.85 : 0.45)
                 VStack(spacing: 5) {
                     Text("给自己 3 分钟").font(.title3.bold())
                     Text("慢慢呼吸").font(.subheadline.bold())
@@ -64,7 +62,7 @@ struct CravingRescueView: View {
                         .font(.system(.title, design: .rounded, weight: .bold))
                 }
             }
-            .onAppear { isExpanded = true; isBreathing = true }
+            .onAppear { startBreathingMotion() }
             .frame(height: 218)
             Text("吸气 4 秒，停住 2 秒，呼气 6 秒。烟瘾会像浪一样退去。")
                 .font(.caption)
@@ -166,6 +164,22 @@ struct CravingRescueView: View {
             }
         }
     }
+
+    private func startBreathingMotion() {
+        withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
+            isExpanded = true
+        }
+        withAnimation(.easeInOut(duration: 4.6).repeatForever(autoreverses: true)) {
+            outerDriftsUpperLeft = true
+        }
+        withAnimation(.easeInOut(duration: 3.7).repeatForever(autoreverses: true)) {
+            innerDriftsLowerRight = true
+        }
+        withAnimation(.easeInOut(duration: 4.1).repeatForever(autoreverses: true)) {
+            ringDriftsUpperLeft = true
+        }
+    }
+
     private func saveSuccess() {
         let nextCount = records.filter { !$0.didSmoke }.count + 1
         let todayCount = records.filter { !$0.didSmoke && Calendar.current.isDateInToday($0.createdAt) }.count + 1
