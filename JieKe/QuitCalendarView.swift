@@ -2,14 +2,19 @@ import SwiftUI
 
 struct QuitCalendarView: View {
     let records: [CravingRecord]
-    let snapshot: QuitCalendarSnapshot
+    private let snapshot: QuitCalendarSnapshot
     private let calendar = Calendar.current
     private let weekdays = ["日", "一", "二", "三", "四", "五", "六"]
     @State private var selectedDay: CalendarDaySelection?
 
-    var body: some View {
-        let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
+    init(records: [CravingRecord]) {
+        self.records = records
+        snapshot = QuitCalendarSnapshot(records: records.map {
+            QuitCalendarRecordState(createdAt: $0.createdAt, didSmoke: $0.didSmoke)
+        })
+    }
 
+    var body: some View {
         VStack(spacing: 10) {
             HStack {
                 Text(snapshot.monthStart, format: .dateTime.year().month())
@@ -20,12 +25,30 @@ struct QuitCalendarView: View {
             }
             .font(.caption)
 
-            LazyVGrid(columns: columns, spacing: 8) {
-                ForEach(weekdays, id: \.self) { Text($0).font(.caption2).foregroundStyle(.secondary) }
-                ForEach(0..<snapshot.leadingDays, id: \.self) { _ in Color.clear.frame(height: 32) }
-                ForEach(snapshot.days) { day in
-                    CalendarDay(day: day) {
-                        selectedDay = CalendarDaySelection(date: day.date)
+            // A month has at most six rows. A fixed grid avoids LazyVGrid's
+            // first-appearance measurement pass, which could move a List while
+            // the user was scrolling into this section.
+            VStack(spacing: 8) {
+                HStack(spacing: 4) {
+                    ForEach(weekdays, id: \.self) { weekday in
+                        Text(weekday)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                ForEach(0..<snapshot.rowCount, id: \.self) { row in
+                    HStack(spacing: 4) {
+                        ForEach(0..<7, id: \.self) { column in
+                            let index = row * 7 + column
+                            if let day = snapshot.cells.indices.contains(index) ? snapshot.cells[index] : nil {
+                                CalendarDay(day: day) {
+                                    selectedDay = CalendarDaySelection(date: day.date)
+                                }
+                            } else {
+                                Color.clear.frame(maxWidth: .infinity, minHeight: 32)
+                            }
+                        }
                     }
                 }
             }
@@ -67,18 +90,18 @@ struct QuitCalendarRecordState: Sendable {
 
 struct QuitCalendarSnapshot {
     let monthStart: Date
-    let leadingDays: Int
-    let days: [QuitCalendarDay]
+    let cells: [QuitCalendarDay?]
+    let rowCount: Int
 
     init(records: [QuitCalendarRecordState], now: Date = .now, calendar: Calendar = .current) {
         let month = calendar.dateInterval(of: .month, for: now)!
         monthStart = month.start
-        leadingDays = calendar.component(.weekday, from: month.start) - 1
+        let leadingDays = calendar.component(.weekday, from: month.start) - 1
         let recordsByDay = Dictionary(grouping: records.filter { $0.createdAt >= month.start && $0.createdAt < month.end }) {
             calendar.component(.day, from: $0.createdAt)
         }
         let range = calendar.range(of: .day, in: .month, for: now)!
-        days = range.compactMap { value in
+        let days = range.compactMap { value in
             guard let date = calendar.date(bySetting: .day, value: value, of: month.start) else { return nil }
             let dayRecords = recordsByDay[value] ?? []
             return QuitCalendarDay(
@@ -88,6 +111,9 @@ struct QuitCalendarSnapshot {
                 hasRelapse: dayRecords.contains { $0.didSmoke }
             )
         }
+        let requiredCells = leadingDays + days.count
+        rowCount = max(5, Int(ceil(Double(requiredCells) / 7.0)))
+        cells = Array(repeating: nil, count: leadingDays) + days.map(Optional.some)
     }
 }
 

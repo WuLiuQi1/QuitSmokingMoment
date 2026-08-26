@@ -6,17 +6,6 @@ struct TrendsView: View {
     @Query private var profiles: [QuitProfile]
     @Query(sort: \CravingRecord.createdAt) private var records: [CravingRecord]
     @State private var selectedPeriod: SummaryPeriod = .day
-    @State private var calendarSnapshot: QuitCalendarSnapshot?
-
-    private var calendarRecordStates: [QuitCalendarRecordState] {
-        records.map { QuitCalendarRecordState(createdAt: $0.createdAt, didSmoke: $0.didSmoke) }
-    }
-
-    private var calendarDataToken: String {
-        calendarRecordStates.map {
-            "\($0.createdAt.timeIntervalSinceReferenceDate)|\($0.didSmoke)"
-        }.joined(separator: ",")
-    }
 
     var body: some View {
         ZStack {
@@ -71,12 +60,7 @@ struct TrendsView: View {
                 }
 
                 Section("戒烟日历") {
-                    if let calendarSnapshot {
-                        QuitCalendarView(records: records, snapshot: calendarSnapshot)
-                    } else {
-                        HStack { ProgressView(); Text("准备戒烟日历…").foregroundStyle(.secondary) }
-                            .padding(.vertical, 32)
-                    }
+                    QuitCalendarView(records: records)
                 }
 
                 Section("常见诱因") {
@@ -152,14 +136,6 @@ struct TrendsView: View {
         }
         .scrollContentBackground(.hidden)
         .navigationTitle("趋势")
-        .task(id: calendarDataToken) {
-            // Build the calendar before the user reaches its section. The
-            // rendered grid then only reads value types while scrolling.
-            let states = calendarRecordStates
-            await Task.yield()
-            guard !Task.isCancelled else { return }
-            calendarSnapshot = QuitCalendarSnapshot(records: states)
-        }
         }
     }
 
