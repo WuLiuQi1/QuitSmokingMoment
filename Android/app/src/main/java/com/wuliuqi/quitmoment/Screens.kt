@@ -3,6 +3,7 @@ package com.wuliuqi.quitmoment
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -11,6 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -74,6 +76,7 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.PI
 import kotlin.math.sin
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -284,17 +287,63 @@ fun EducationScreen() {
 private fun FocusGame(onExit: () -> Unit) {
     var remaining by remember { mutableIntStateOf(120) }
     var score by remember { mutableIntStateOf(0) }
-    var position by remember { mutableStateOf(Offset(.5f, .5f)) }
+    var streak by remember { mutableIntStateOf(0) }
+    var position by remember { mutableStateOf(Offset(.50f, .50f)) }
+    var pulseTarget by remember { mutableStateOf(1f) }
+    val pulse by animateFloatAsState(pulseTarget, animationSpec = tween(900, easing = FastOutSlowInEasing), label = "lightPulse")
+    val isFinished = remaining <= 0
+    fun randomPosition() = Offset(Random.nextFloat() * .64f + .16f, Random.nextFloat() * .62f + .16f)
+    fun capture() {
+        score++
+        streak++
+        position = randomPosition()
+        pulseTarget = if (pulseTarget == 1f) 1.18f else 1f
+    }
     LaunchedEffect(Unit) { while (remaining > 0) { delay(1_000); remaining-- } }
-    Column(Modifier.fillMaxSize().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("烟瘾急救小游戏", fontWeight = FontWeight.Black, fontSize = 22.sp); OutlinedButton(onExit) { Text("退出") } }
-        Text("专注点点乐", color = Purple, fontWeight = FontWeight.Bold, fontSize = 23.sp)
-        Text("把注意力放在每一个蓝色光点上")
-        Card(Modifier.fillMaxWidth()) { Row(Modifier.padding(18.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("专注 $score 次", fontWeight = FontWeight.Bold); Text("${remaining / 60}:${"%02d".format(remaining % 60)}", color = Purple, fontWeight = FontWeight.Black, fontSize = 22.sp) } }
-        Box(Modifier.fillMaxWidth().weight(1f).clip(RoundedCornerShape(28.dp)).background(Color(0xFFDCEEFF))) {
-            Box(Modifier.align(Alignment.TopStart).padding(start = (position.x * 240).dp, top = (position.y * 350).dp).size(68.dp).clip(CircleShape).background(Blue).clickable { score++; position = Offset(((score * 37) % 100) / 100f, ((score * 53) % 100) / 100f) }, contentAlignment = Alignment.Center) { Text("点", color = Color.White, fontWeight = FontWeight.Black, fontSize = 22.sp) }
+    LaunchedEffect(Unit) {
+        while (remaining > 0) {
+            delay(2_800)
+            if (remaining > 0) { streak = 0; position = randomPosition() }
         }
-        Text("游戏不计分胜负，只帮你把这两分钟留给自己。", color = Color.Gray)
-        if (remaining == 0) Button(onExit, Modifier.fillMaxWidth()) { Text("完成，回到急救") }
+    }
+    Column(Modifier.fillMaxSize().padding(18.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text("烟瘾急救小游戏", fontWeight = FontWeight.Black, fontSize = 22.sp)
+            OutlinedButton(onExit) { Text("退出") }
+        }
+        Text(if (isFinished) "你完成了两分钟的转移注意" else "捕光挑战", color = Purple, fontWeight = FontWeight.Bold, fontSize = 23.sp)
+        Text(if (isFinished) "你给自己留出了一段缓冲。" else if (streak >= 3) "连击中，烟瘾正在慢慢过去。" else "跟着光点，把注意力留在当下", color = Color.Gray)
+        Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFFE9E7FF))) {
+            Row(Modifier.padding(horizontal = 18.dp, vertical = 13.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Column { Text("已捕光 $score 次", fontWeight = FontWeight.Bold); Text("当前连击 ×$streak", color = Color.Gray, fontSize = 13.sp) }
+                Text(if (isFinished) "完成" else "${remaining / 60}:${"%02d".format(remaining % 60)}", color = if (isFinished) Green else Purple, fontWeight = FontWeight.Black, fontSize = 22.sp)
+            }
+        }
+        BoxWithConstraints(Modifier.fillMaxWidth().weight(1f).clip(RoundedCornerShape(28.dp)).background(Color(0xFFDCEEFF))) {
+            Canvas(Modifier.fillMaxSize()) {
+                repeat(12) { index ->
+                    val x = size.width * (((index * 37) % 92 + 4) / 100f)
+                    val y = size.height * (((index * 23) % 84 + 8) / 100f)
+                    drawCircle(Color.White.copy(alpha = if (index % 2 == 0) .34f else .18f), radius = 3f + (index % 3) * 2f, center = Offset(x, y))
+                }
+            }
+            if (isFinished) {
+                Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("✦", color = Green, fontSize = 54.sp)
+                    Text("两分钟完成", fontWeight = FontWeight.Black, fontSize = 24.sp)
+                    Text("已捕捉 $score 束光", color = Color.Gray)
+                }
+            } else {
+                Box(
+                    Modifier.align(Alignment.TopStart)
+                        .padding(start = maxWidth * position.x, top = maxHeight * position.y)
+                        .size((74 * pulse).dp).clip(CircleShape).background(Blue.copy(alpha = .22f))
+                        .padding(10.dp).clip(CircleShape).background(Blue).clickable { capture() },
+                    contentAlignment = Alignment.Center
+                ) { Text("✦", color = Color.White, fontWeight = FontWeight.Black, fontSize = 28.sp) }
+            }
+        }
+        Text("光点会自己换位，不用追求分数；把这两分钟留给自己就好。", color = Color.Gray, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        if (isFinished) Button(onExit, Modifier.fillMaxWidth()) { Text("完成，回到急救") }
     }
 }
